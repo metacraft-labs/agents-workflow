@@ -23,4 +23,3 @@ end
 module Kernel
   include PlatformHelpers
 end
-
