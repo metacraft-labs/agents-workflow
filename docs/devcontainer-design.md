@@ -16,18 +16,18 @@ This document describes requirements, rationale, and implementation details. Nix
 - Support all agentic CLIs integrated by agents‑workflow (see per‑agent docs under `docs/agents/`).
 - Implement credential propagation: when host is authenticated to a provider, the guest resolves the same credentials without re‑login.
 - Provide persistent build caches and Nix store layers across container rebuilds; enable optional host↔guest cache sharing for language package managers.
-- Integrate execution hooks needed by Agent Time‑Travel (timeline markers, snapshot triggers) without interfering with normal shell use.
+- Integrate execution hooks needed by Agent Time‑Travel (timeline SessionMoments, FsSnapshot triggers) without interfering with normal shell use.
 - Keep secrets out of images; use runtime env/secrets and read‑only mounts; be auditable.
 
 ### Design Rationale
 
 - Layering separates concerns:
-  - Nix base focuses on reproducibility and performant builds via shared caches.
+  - The base image (e.g., Nix or other supported systems) focuses on reproducibility and performant builds via shared caches.
   - Agents base concentrates agent tools, shell setup, recording hooks, and credential bridges.
-  - Projects remain small: generally a `devcontainer.json` and a Nix devshell.
-- Nix is the lingua franca for project dependencies and toolchains; downstream projects reuse the same workflow regardless of language.
-- Cache sharing is opt‑in and explicit per package manager to avoid accidental leakage and permission issues.
-- Credential propagation prioritizes agent‑approved mechanisms (env vars, config files, OS agents) and relies on read‑only host mounts or forwarded sockets where feasible.
+  - Projects remain small: typically just a `devcontainer.json` and a project-specific devshell or environment definition.
+- While Nix is very well supported and is a common choice for project dependencies and toolchains, derived projects are not required to use Nix. Other systems that offer efficient cache sharing and reproducibility, such as SPack, may also be supported to a high degree.
+- Cache sharing is opt-in and explicit per package manager to avoid accidental leakage and permission issues.
+- Credential propagation prioritizes agent-approved mechanisms (env vars, config files, OS agents) and relies on read-only host mounts or forwarded sockets where feasible.
 
 ### Layered Images
 
@@ -39,9 +39,8 @@ This document describes requirements, rationale, and implementation details. Nix
 
 2) Agents Base Image
    - FROM: Nix Devcontainer Base.
-   - Installs agentic CLIs supported by Agents‑Workflow (see `docs/agents/`). Examples include: OpenAI/Anthropic CLI tooling, GitHub CLI, and other agent runners referenced by `bin/*` and `*-setup` scripts.
-   - Copies `bin/`, `common-pre-setup`, `common-post-setup`, and setup shims (`codex-setup`, `copilot-setup`, `open-hands-setup`, `goose-setup`, `jules-setup`).
-   - Configures shell integration (zsh/bash/fish) to emit execution markers via preexec/DEBUG traps in support of time‑travel anchors.
+   - Installs all supported agentic CLIs using Nix. The list of agents is shared with the agents-workflow Nix package, defined at the root of this repository, ensuring consistency between the devcontainer and the Nix package set.
+   - Configures shell integration (zsh/bash/fish) to emit timeline SessionMoments via preexec/DEBUG traps and trigger FsSnapshots.
    - Prepares netrc/SSH/gh credential bridges (runtime only; nothing baked into the image).
 
 3) Project Image
@@ -103,8 +102,8 @@ Each agent’s exact mapping is captured in `docs/agents/<tool>.md` and validate
 
 ### Time‑Travel Execution Hooks in Devcontainer
 
-- zsh: `preexec` emits a timeline marker before execution; `precmd` after. bash: `trap DEBUG` + `PROMPT_COMMAND`. fish: `fish_preexec`/`fish_postexec`.
-- The hook writes a small JSON event (`{ts, cmd, cwd, session}`) to a FIFO/log consumed by the runner to align markers with snapshot anchors.
+- zsh: `preexec` emits a timeline SessionMoment before execution; `precmd` after. bash: `trap DEBUG` + `PROMPT_COMMAND`. fish: `fish_preexec`/`fish_postexec`.
+- The hook writes a small JSON event (`{ts, cmd, cwd, session}`) to a FIFO/log consumed by the runner to align SessionMoments with FsSnapshots.
 - Hooks are opt‑out via config key (see `docs/configuration.md`), and no‑op for non‑interactive shells.
 
 ### Caching and Host↔Guest Cache Sharing
@@ -124,7 +123,7 @@ Each agent’s exact mapping is captured in `docs/agents/<tool>.md` and validate
 
 - Cold/warm build benchmarks with and without caches.
 - Credential probes for each agent (non‑destructive): `gh auth status`, short `curl` to model/provider endpoints when keys present.
-- Time‑travel hook smoke tests: run a few commands and verify markers are emitted.
+- Time‑travel hook smoke tests: run a few commands and verify SessionMoments are emitted.
 - Cross‑platform matrix: Linux, macOS (Docker Desktop), Windows (WSL2/Hyper‑V).
 
 ### Migration Plan

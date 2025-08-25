@@ -14,13 +14,13 @@ Summarize what this tool does and how Agents‑Workflow uses it.
 ### Execution Hooks
 
 - How commands are invoked inside sessions.
-- Points where timeline markers should be emitted.
+- Points where timeline SessionMoments should be emitted.
 - Any stderr/stdout peculiarities affecting recording.
 
 ### Time‑Travel Considerations
 
-- Side effects on the filesystem and how to snapshot effectively.
-- Required quiesce/flush operations before anchoring (if any).
+- Side effects on the filesystem and how to snapshot effectively (FsSnapshots).
+- Required quiesce/flush operations before creating an FsSnapshot (if any).
 
 ### Known Issues
 
