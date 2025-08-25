@@ -128,6 +128,12 @@ Mirrors `docs/configuration.md` including provenance, precedence, and Windows be
   - Serves the WebUI for local use; in `--local` it binds to `127.0.0.1` and hides admin features.
 
 #### 9) Utilities
+#### 10) Followers and Multi‑OS
+
+- `aw followers list` — List configured follower hosts and tags.
+- `aw followers sync-fence [--timeout <sec>] [--tag <k=v>]... [--host <name>]... [--all]` — Perform a synchronization fence, ensuring followers match the leader workspace state.
+- `aw run-everywhere <action> [args...] [--tag <k=v>]... [--host <name>]... [--all]` — Invoke project’s `.agents/run_everywhere` on selected followers.
+
 
 - `aw doctor` — Environment diagnostics (snapshot providers, multiplexer availability, docker/devcontainer, git).
 - `aw completion [bash|zsh|fish|pwsh]` — Shell completions.

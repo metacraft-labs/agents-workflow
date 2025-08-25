@@ -4,11 +4,15 @@
 
 Agent Time-Travel lets a user review an agent’s coding session and jump back to precise moments in time to intervene by inserting a new chat message. Seeking to a timestamp restores the corresponding filesystem state using filesystem snapshots (FsSnapshots). The feature integrates across CLI, TUI, WebUI, and REST, and builds on the snapshot provider model referenced by other docs (see `docs/fs-snapshots/overview.md`).
 
+### Implementation Phasing
+
+The initial implementation will focus on supporting regular FsSnapshot on copy-on-write (CoW) Linux filesystems (such as ZFS, Btrfs, and NILFS2), using a session recorder based on Claude Code hooks. An end-to-end prototype will be developed for the entire Agent Time-Travel system, including session recording, timeline navigation, and snapshot/seek/branch operations, to validate the core workflow and user experience. Once this prototype is functional, we will incrementally add support for additional recording and snapshotting mechanisms, including user-space overlay filesystems for macOS and Windows, and advanced recording integrations.
+
 ### Goals
 
 - Enable scrubbing through an agent session with exact visual terminal playback and consistent filesystem state.
 - Allow the user to pause at any moment, inspect the workspace at that time, and create a new SessionBranch with an injected instruction.
-- Provide first-class support for ZFS/Btrfs/NILFS2 where available; offer robust fallbacks on APFS (macOS), VSS (Windows), and non‑CoW Linux.
+- Provide first-class support for ZFS/Btrfs/NILFS2 where available; offer robust fallbacks on non‑CoW Linux, macOS and Windows through file system in user space CoW overlays.
 - Expose a consistent API and UX across WebUI, TUI, and CLI.
 
 ### Non-Goals
@@ -24,15 +28,15 @@ Agent Time-Travel lets a user review an agent’s coding session and jump back t
 - **FsSnapshot**: A SessionMoment that has an associated filesystem snapshot reference (snapshot created near‑synchronously with the moment).
 - **SessionFrame**: A visual state at a specific timestamp; the player can seek and render the SessionFrame.
 - **SessionTimeline**: The ordered set of events (logs, SessionMoments, FsSnapshots, resizes) across a session.
-- **SessionBranch**: A new session created from an FsSnapshot’s filesystem state with an injected chat message.
+- **SessionBranch**: A new session created from a SessionMoment and its associated FsSnapshot’s filesystem state with an injected chat message.
 
 ### Architecture Overview
 
-- **Recorder**: Captures terminal output as an asciinema session recording (preferred) or ttyrec; emits SessionMoments at logical boundaries (e.g., per-command).
-- **FsSnapshot Manager**: Creates and tracks filesystem snapshots; maintains mapping {timestamp → snapshotId}.
-- **Snapshot Provider Abstraction**: Chooses provider per host (ZFS → Btrfs → APFS/VSS → NILFS2/Overlay → copy; FSKit/WinFsp overlays on macOS/Windows). See Provider Matrix below.
-- **SessionTimeline Service (REST)**: Lists FsSnapshots/SessionMoments, seeks, and creates SessionBranches; streams session timeline events via SSE.
-- **Players (WebUI/TUI)**: Embed the session recording; render SessionMoments; orchestrate seek/SessionBranch actions.
+- **Recorder**: Captures terminal output as an asciinema session recording (preferred) or ttyrec; emits SessionMoments at logical boundaries (e.g., per-command). The initial prototype will use a recorder based on Claude Code hooks.
+- **FsSnapshot Manager**: Creates and tracks filesystem snapshots; maintains mapping {moment → snapshotId}.
+- **Snapshot Provider Abstraction**: Chooses provider per host (ZFS → Btrfs → NILFS2 → Overlay → copy; FSKit/WinFsp overlays on macOS/Windows). See Provider Matrix below.
+- **SessionTimeline Service (REST)**: Lists FsSnapshots/SessionMoments, seeks, and creates SessionBranches; streams session recording events via SSE.
+- **Players (WebUI/TUI)**: Embed the session recording; render streaming SessionRecordings in real-time and allows seeking to arbitrary SessionFrames; orchestrate SessionBranch actions.
 - **Workspace Manager**: Mounts read-only snapshots for inspection and prepares writable clones/upper layers for SessionBranches.
 
 ### SessionRecording and SessionTimeline Model
@@ -57,12 +61,12 @@ Agent Time-Travel lets a user review an agent’s coding session and jump back t
     - Overlay fallback: lower = base tree, upper/work on fast storage (tmpfs or RAM-backed NILFS2/zram/brd) for ephemeral SessionBranches.
     - Copy fallback: `cp --reflink=auto` when possible; otherwise deep copy (last resort).
   - macOS:
-    - APFS snapshots: read-only, instantaneous; mountable for inspection. For SessionBranch, create an overlay-style writable workspace using a read-only snapshot as lower with a writable upper (FSKit backend when available) or fast copy-on-write file clones where feasible.
+    - User-space overlay: Use FSKit to provide a copy-on-write overlay filesystem for both inspection and SessionBranching, as APFS snapshots are not fast enough for our needs.
   - Windows:
-    - VSS shadow copies: read-only snapshots at volume level; expose snapshot content for inspection. For SessionBranch, materialize a writable workspace via differencing VHD(X) layered over the snapshot materialization or by copying-on-write using a WinFsp-backed overlay.
+    - User-space overlay: Use WinFsp to provide a copy-on-write overlay filesystem for both inspection and SessionBranching, as VSS snapshots are not fast enough for our needs.
 
 - **SessionBranch Semantics**:
-  - Writable clones are native on ZFS/Btrfs. On APFS/VSS, SessionBranching is emulated via overlay or virtual disk differencing over the read-only snapshot view.
+  - Writable clones are native on ZFS/Btrfs. On macOS and Windows, SessionBranching is implemented via user-space overlay filesystems (FSKit/WinFsp) rather than native snapshotting.
   - SessionBranches are isolated workspaces; original session remains immutable.
 
 ### User‑Space Filesystem Overlay (macOS and Windows)
@@ -78,6 +82,7 @@ Agent Time-Travel lets a user review an agent’s coding session and jump back t
   - bash: `trap DEBUG` + `PROMPT_COMMAND` pair to delimit commands.
   - fish: `fish_preexec`/`fish_postexec` equivalents.
 - **Runtime Integration**: The runner emits session timeline events (SSE) at milestones; the snapshot manager aligns nearest FsSnapshot ≤ timestamp.
+- **Multi‑OS Sync Fence**: When multi‑OS testing is enabled, each execution cycle performs `fs_snapshot_and_sync` on the leader (create FsSnapshot, then fence Mutagen sessions to followers) before invoking `run_everywhere`. See `docs/multi-os-testing.md`.
 - **Advanced (future)**: eBPF capture of PTY I/O and/or FS mutations; rr-based post‑facto reconstruction of session recordings; out of scope for v1 but compatible with this model.
 
 ### REST API Extensions
@@ -130,7 +135,7 @@ Agent Time-Travel lets a user review an agent’s coding session and jump back t
 
 ### WebUI UX
 
-- **Player Panel**: Embed `<asciinema-player>` with `poster`, SessionMoments, and a scrubber. Time cursor shows nearest FsSnapshot and label.
+- **Player Panel**: Embed `<asciinema-player>` with SessionMoments and a scrubber. Time cursor shows nearest FsSnapshot and label.
 - **Pause & Intervene**: On pause, surface “Inspect snapshot” and “SessionBranch from here”.
 - **Inspect Snapshot**: Mounts read‑only view; open a lightweight file browser and offer “Open IDE at this point”.
 - **SessionBranch From Here**: Dialog to enter an injected message and name; creates a new session (SessionBranch); link both sessions for side‑by‑side comparison.
@@ -156,17 +161,17 @@ Agent Time-Travel lets a user review an agent’s coding session and jump back t
 
 - **Keystrokes**: If input capture is enabled, redact known password prompts (heuristics based on ECHO off and common prompts). Make input capture opt‑in.
 - **Access Control**: SessionTimeline/seek/SessionBranch require the same permissions as session access; snapshot mounts use least‑privilege read‑only where applicable.
-- **Data Retention**: Separate retention for recordings vs snapshots; defaults minimize data exposure. Encrypt at rest when stored remotely.
+- **Data Retention**: Separate retention for session recordings vs snapshots; defaults minimize data exposure. Encrypt at rest when stored remotely.
 
 ### Performance, Retention, and Limits
 
 - **Snapshot Rate Limits**: Min interval between FsSnapshots; coalesce within a small window (e.g., 250–500 ms) to avoid bursty commands creating many snapshots.
 - **Retention**: Policies by count/age/size. Prune unreferenced checkpoints (e.g., NILFS2) and expired provider snapshots.
-- **Storage**: Cast files compressed; offload to object storage. Mounts are short‑lived and garbage‑collected.
+- **Storage**: Session recording files compressed; offload to object storage. Mounts are short‑lived and garbage‑collected.
 
 ### Failure Modes and Recovery
 
-- **Snapshot Creation Fails**: Create a SessionMoment with `fsSnapshot=false` and reason; continue recording; allow manual retry.
+- **Snapshot Creation Fails**: Create a SessionMoment with `fsSnapshot=false` and reason; continue session recording; allow manual retry.
 - **Seek Failure**: Report provider error and suggest nearest valid FsSnapshot.
 - **Provider Degraded**: Fall back per provider preference, with explicit event logged to the session timeline.
 
@@ -175,14 +180,14 @@ Agent Time-Travel lets a user review an agent’s coding session and jump back t
 - **ZFS**: Snapshots and clones — ideal for FsSnapshots and SessionBranches.
 - **Btrfs**: Subvolume snapshots — ideal for FsSnapshots and SessionBranches.
 - **NILFS2**: Continuous checkpoints; promote to snapshots; mount via `cp=<cno>`; SessionBranch via overlay.
-- **APFS**: Read‑only snapshots; SessionBranch via overlay or file clones (no native writable clone of snapshot).
-- **VSS**: Read‑only shadow copies; SessionBranch via differencing VHD/overlay.
+- **APFS**: Not targeted; APFS snapshots are not fast enough for our needs. Use FSKit overlay instead.
+- **VSS**: Not targeted; VSS snapshots are not fast enough for our needs. Use WinFsp overlay instead.
 - **Overlay/Copy**: Universal fallbacks when CoW is unavailable.
 
 ### Open Issues and Future Work
 
 - eBPF PTY and FS hooks for automatic, runner‑independent capture.
-- rr‑based post‑facto reconstruction of casts and fine‑grained FsSnapshots.
+- rr‑based post‑facto reconstruction of session recordings and fine‑grained FsSnapshots.
 - IPBT integration for advanced session timeline browsing on ttyrec recordings.
 - FSKit backend maturation on macOS for robust overlay SessionBranching without kexts.
 - Windows containers integration to provide stronger per‑session isolation when SessionBranching.

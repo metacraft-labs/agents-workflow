@@ -184,6 +184,14 @@ Response example:
 ```
 
 #### Capability Discovery
+#### Followers and Multi‑OS Execution
+
+- `GET /api/v1/followers` → List follower hosts with metadata (os, tags, status).
+- `POST /api/v1/followers/sync-fence` → Body: `{ selectors: { all?: boolean, hosts?: [string], tags?: [string] }, timeoutSec?: number }`.
+  - Response: per‑host fence status and timings.
+- `POST /api/v1/run-everywhere` → Body: `{ action: string, args?: [string], selectors: {...} }`.
+  - Streams per‑host logs via SSE at `/api/v1/run-everywhere/{id}/events`.
+
 
 - `GET /api/v1/agents` → supported agent types and configurable options.
 - `GET /api/v1/runtimes` → available runtime images/devcontainers.

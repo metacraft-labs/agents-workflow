@@ -124,6 +124,7 @@ Each agent’s exact mapping is captured in `docs/agents/<tool>.md` and validate
 - Cold/warm build benchmarks with and without caches.
 - Credential probes for each agent (non‑destructive): `gh auth status`, short `curl` to model/provider endpoints when keys present.
 - Time‑travel hook smoke tests: run a few commands and verify SessionMoments are emitted.
+- Multi‑OS smoke tests: verify Mutagen sessions, fence latency, and `run_everywhere` execution on tagged followers.
 - Cross‑platform matrix: Linux, macOS (Docker Desktop), Windows (WSL2/Hyper‑V).
 
 ### Migration Plan
