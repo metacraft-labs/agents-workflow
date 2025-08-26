@@ -34,6 +34,8 @@ Configuration mapping examples:
 - `tui.defaultMode` ↔ `--mode`
 - `terminal.multiplexer` ↔ `--multiplexer <tmux|zellij|screen>`
 - `editor.default` ↔ `--editor`
+- `browserAutomation.enabled` ↔ `--browser-automation`, `AGENTS_WORKFLOW_BROWSER_AUTOMATION_ENABLED`
+- `browserAutomation.profile` ↔ `--browser-profile`, `AGENTS_WORKFLOW_BROWSER_PROFILE`
 
 ### Subcommands
 
@@ -56,13 +58,14 @@ Task launch behavior in TUI:
 
 #### 2) Tasks
 
-- `aw task [create] [--prompt <TEXT> | --prompt-file <FILE>] [--repo <PATH|URL>] [--branch <NAME>] [--agent <TYPE>[@VERSION]] [--instances <N>] [--runtime <devcontainer|local|unsandboxed>] [--devcontainer-path <PATH>] [--labels k=v ...] [--delivery <pr|branch|patch>] [--target-branch <NAME>] [--yes]`
+- `aw task [create] [--prompt <TEXT> | --prompt-file <FILE>] [--repo <PATH|URL>] [--branch <NAME>] [--agent <TYPE>[@VERSION]] [--instances <N>] [--runtime <devcontainer|local|unsandboxed>] [--devcontainer-path <PATH>] [--labels k=v ...] [--delivery <pr|branch|patch>] [--target-branch <NAME>] [--browser-automation <true|false>] [--browser-profile <NAME>] [--yes]`
 
 Behavior:
 
 - In local mode, prepares a per-task workspace using snapshot preference order (ZFS > Btrfs > Overlay > copy) and launches the agent.
 - In rest mode, calls `POST /api/v1/tasks` with the provided parameters.
 - Creates/updates a local PID-like session record when launching locally (see “Local Discovery”).
+- When `--browser-automation true` (default), launches site-specific browser automation (e.g., Codex) using the selected agent browser profile. When `false`, web automation is skipped.
 - Branch autocompletion uses standard git protocol:
   - Local mode: `git for-each-ref` on the repo; cached with debounce.
   - REST mode: server uses `git ls-remote`/refs against admin-configured URL to populate its cache; CLI/Web query capability endpoints for suggestions.
@@ -216,6 +219,12 @@ Create a task locally and immediately open TUI window/panes:
 
 ```bash
 aw task --prompt "Refactor checkout service for reliability" --repo . --agent openhands --runtime devcontainer --branch main --instances 2
+```
+
+Specify a browser profile and disable automation explicitly:
+
+```bash
+aw task --prompt "Kick off Codex" --browser-profile work-codex --browser-automation false
 ```
 
 List and tail logs for sessions:
