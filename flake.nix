@@ -3,14 +3,11 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
-    codex.url = "github:openai/codex";
-    codex.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs = {
     self,
     nixpkgs,
-    codex,
   }: let
     systems = ["x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin"];
     forAllSystems = nixpkgs.lib.genAttrs systems;
@@ -27,7 +24,8 @@
             pkgs.goose-cli
             pkgs.claude-code
             pkgs.gemini-cli
-            codex.packages.${system}.codex-rs
+            pkgs.codex
+            pkgs.opencode
           ]}:$PATH
           exec ruby ${./bin/agent-task} "$@"
         '';
@@ -61,6 +59,7 @@
         config.allowUnfree = true; # Allow unfree packages like claude-code
       };
       isLinux = pkgs.stdenv.isLinux;
+      isDarwin = pkgs.stdenv.isDarwin;
     in {
       default = pkgs.mkShell {
         buildInputs = [
@@ -76,11 +75,15 @@
           pkgs.goose-cli # Goose AI coding assistant
           pkgs.claude-code # Claude Code - agentic coding tool
           pkgs.gemini-cli # Gemini CLI
-          codex.packages.${system}.codex-rs # OpenAI Codex CLI (native Rust implementation)
+          pkgs.codex # OpenAI Codex CLI (Rust implementation)
+          pkgs.opencode # OpenCode AI coding assistant
         ] ++ pkgs.lib.optionals isLinux [
           # Linux-only filesystem utilities for snapshot functionality
           pkgs.zfs # ZFS utilities for copy-on-write snapshots
           pkgs.btrfs-progs # Btrfs utilities for subvolume snapshots
+        ] ++ pkgs.lib.optionals isDarwin [
+          # macOS-only VM manager
+          pkgs.lima # Linux virtual machines on macOS
         ];
 
         shellHook = ''
