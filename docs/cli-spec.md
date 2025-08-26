@@ -36,6 +36,8 @@ Configuration mapping examples:
 - `editor.default` ↔ `--editor`
 - `browserAutomation.enabled` ↔ `--browser-automation`, `AGENTS_WORKFLOW_BROWSER_AUTOMATION_ENABLED`
 - `browserAutomation.profile` ↔ `--browser-profile`, `AGENTS_WORKFLOW_BROWSER_PROFILE`
+- `browserAutomation.chatgptUsername` ↔ `--chatgpt-username`, `AGENTS_WORKFLOW_BROWSER_AUTOMATION_CHATGPT_USERNAME`
+- `codex.workspace` ↔ `--codex-workspace`, `AGENTS_WORKFLOW_CODEX_WORKSPACE`
 
 ### Subcommands
 
@@ -58,7 +60,7 @@ Task launch behavior in TUI:
 
 #### 2) Tasks
 
-- `aw task [create] [--prompt <TEXT> | --prompt-file <FILE>] [--repo <PATH|URL>] [--branch <NAME>] [--agent <TYPE>[@VERSION]] [--instances <N>] [--runtime <devcontainer|local|unsandboxed>] [--devcontainer-path <PATH>] [--labels k=v ...] [--delivery <pr|branch|patch>] [--target-branch <NAME>] [--browser-automation <true|false>] [--browser-profile <NAME>] [--yes]`
+- `aw task [create] [--prompt <TEXT> | --prompt-file <FILE>] [--repo <PATH|URL>] [--branch <NAME>] [--agent <TYPE>[@VERSION]] [--instances <N>] [--runtime <devcontainer|local|unsandboxed>] [--devcontainer-path <PATH>] [--labels k=v ...] [--delivery <pr|branch|patch>] [--target-branch <NAME>] [--browser-automation <true|false>] [--browser-profile <NAME>] [--chatgpt-username <NAME>] [--codex-workspace <WORKSPACE>] [--yes]`
 
 Behavior:
 
@@ -66,6 +68,7 @@ Behavior:
 - In rest mode, calls `POST /api/v1/tasks` with the provided parameters.
 - Creates/updates a local PID-like session record when launching locally (see “Local Discovery”).
 - When `--browser-automation true` (default), launches site-specific browser automation (e.g., Codex) using the selected agent browser profile. When `false`, web automation is skipped.
+- Codex integration: if `--browser-profile` is not specified, discovers or creates a ChatGPT profile per `docs/browser-automation/codex.md`, optionally filtered by `--chatgpt-username`. Workspace is taken from `--codex-workspace` or config; branch is taken from `--branch`.
 - Branch autocompletion uses standard git protocol:
   - Local mode: `git for-each-ref` on the repo; cached with debounce.
   - REST mode: server uses `git ls-remote`/refs against admin-configured URL to populate its cache; CLI/Web query capability endpoints for suggestions.

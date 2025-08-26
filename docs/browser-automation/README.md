@@ -12,5 +12,3 @@ Each document in this folder describes an automation targeting a specific site t
 - Use Playwright persistent contexts bound to a selected profile.
 - Prefer headless execution when the profile’s login expectations are met; otherwise, switch to headful and guide the user.
 - Detect UI drift and fail fast with actionable diagnostics. When possible, surface the browser window to help the user investigate.
-
-
