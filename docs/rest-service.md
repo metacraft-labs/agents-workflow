@@ -189,8 +189,41 @@ Response example:
 - `GET /api/v1/followers` → List follower hosts with metadata (os, tags, status).
 - `POST /api/v1/followers/sync-fence` → Body: `{ selectors: { all?: boolean, hosts?: [string], tags?: [string] }, timeoutSec?: number }`.
   - Response: per‑host fence status and timings.
-- `POST /api/v1/run-everywhere` → Body: `{ action: string, args?: [string], selectors: {...} }`.
+- `POST /api/v1/run-everywhere` → Body: `{ command: string, args?: [string], selectors: {...} }`.
   - Streams per‑host logs via SSE at `/api/v1/run-everywhere/{id}/events`.
+
+#### Connectivity (Overlay Keys, Handshake, Relay)
+
+- `POST /api/v1/connect/keys` → Request session‑scoped connectivity credentials.
+  - Body: `{ providers: ["netbird","tailscale"], tags?: [string] }`
+  - Response: `{ provider: "netbird"|"tailscale"|"none", credentials?: {...} }`
+    - For `netbird`: `{ setupKey: string, reusable: bool, ephemeral: bool, autoGroups: [string] }`
+    - For `tailscale`: `{ authKey: string, ephemeral: bool, aclTags: [string] }`
+
+- `POST /api/v1/connect/handshake` → Initiate follower connectivity check.
+  - Body: `{ sessionId: string, hosts: [string], timeoutSec?: number }`
+  - Response: `{ statuses: { [host: string]: { overlay: "ok"|"fail"|"skip", relay: "ok"|"fail"|"skip", ssh: "ok"|"fail" } } }`
+
+- `POST /api/v1/connect/handshake/ack` → Follower ack upon readiness.
+  - Body: `{ sessionId: string, host: string, overlayReady?: bool, relayReady?: bool, sshOk?: bool }`
+
+- Relay endpoints (fallback):
+  - `GET /api/v1/relay/{sessionId}/{host}/control` (SSE) — control stream to follower
+  - `GET /api/v1/relay/{sessionId}/{host}/stdin` (SSE) — stdin stream to follower (optional)
+  - `POST /api/v1/relay/{sessionId}/{host}/stdout`
+  - `POST /api/v1/relay/{sessionId}/{host}/stderr`
+  - `POST /api/v1/relay/{sessionId}/{host}/status`
+
+#### Session SOCKS5 Rendezvous (fallback)
+
+- `GET /api/v1/connect/socks` → Session‑scoped SOCKS5 front‑end (TCP only). Auth via session token; maps logical hostnames to registered peers.
+- `GET /api/v1/connect/socks/register` (WebSocket) → Peer registers local targets.
+  - Query: `?sessionId=...&peerId=...&role=leader|follower`
+  - On connect, peer sends JSON: `{ "targets": { "ssh": "127.0.0.1:22" } }`
+  - Server binds logical names (e.g., `follower-01:22`) to that WS stream.
+- SOCKS name resolution: leader’s SSH connects to `follower-01:22`; server forwards over WS to peer’s target (e.g., `127.0.0.1:22`).
+
+Client‑hosted rendezvous: The `aw` client may alternatively host a session‑scoped SOCKS5 front‑end and a WS hub, using the same register protocol. In this mode, peers connect their WS to the client, and SSH/Mutagen use the client’s local SOCKS5.
 
 
 - `GET /api/v1/agents` → supported agent types and configurable options.

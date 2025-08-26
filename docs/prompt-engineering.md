@@ -23,8 +23,8 @@ Document when and how Agents‑Workflow automatically injects instructions into 
    - Goal: bind edits and commands to SessionMoments/FsSnapshots for reproducibility.
    - Content: "Between editing and running tools, a filesystem snapshot will be taken automatically; do not run concurrent background processes that modify the tree during snapshot."
 
-3) Multi‑OS Testing (run_everywhere)
-   - Trigger: When multi‑OS is enabled, after `fs_snapshot_and_sync` the agent is instructed to use `run_everywhere`.
+3) Multi‑OS Testing (run‑everywhere)
+   - Trigger: When multi‑OS is enabled, after `fs_snapshot_and_sync` the agent is instructed to use `run-everywhere`.
    - Content (illustrative excerpt):
      - "To validate across OSes, run `.agents/run_everywhere <action> [--host <name>|--tag <k=v>|--all]`."
      - "Examples: `.agents/run_everywhere test --all`; `.agents/run_everywhere build --tag os=windows`."
@@ -54,11 +54,11 @@ Multi‑OS enabled session preamble snippet:
 
 ```
 You are working in a sandboxed workspace on the leader. After edits, a filesystem snapshot and sync fence will run. To validate across OSes, use:
-  .agents/run_everywhere <action> [--host <name>|--tag <k=v>|--all]
+  run-everywhere [--host <name>|--tag <k=v>|--all] [--] <command>
 Examples:
-  .agents/run_everywhere test --all
-  .agents/run_everywhere build --tag os=windows
-Do not execute platform-specific commands directly on followers; run_everywhere returns per-host output here.
+  run-everywhere -- test
+  run-everywhere --tag os=windows -- build
+Do not execute platform-specific commands directly on followers; run-everywhere returns per-host output here.
 ```
 
 Time‑Travel snapshotting snippet:

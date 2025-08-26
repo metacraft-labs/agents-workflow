@@ -132,7 +132,16 @@ Mirrors `docs/configuration.md` including provenance, precedence, and Windows be
 
 - `aw followers list` — List configured follower hosts and tags.
 - `aw followers sync-fence [--timeout <sec>] [--tag <k=v>]... [--host <name>]... [--all]` — Perform a synchronization fence, ensuring followers match the leader workspace state.
-- `aw run-everywhere <action> [args...] [--tag <k=v>]... [--host <name>]... [--all]` — Invoke project’s `.agents/run_everywhere` on selected followers.
+- `aw run-everywhere [--tag <k=v>]... [--host <name>]... [--all] [--] <command> [args...]` — Invoke run‑everywhere on selected followers.
+
+#### 11) Connectivity (Overlay/Relay)
+
+- `aw connect keys [--provider netbird|tailscale|auto] [--tag <name>]...` — Request session connectivity credentials.
+- `aw connect handshake --session <id> [--hosts <list>] [--timeout <sec>]` — Initiate and wait for follower acks; prints per‑host status.
+- Relay utilities (fallback):
+  - `aw relay tail --session <id> --host <name> [--stream stdout|stderr|status]`
+  - `aw relay send --session <id> --host <name> --control <json>`
+  - `aw relay socks5 --session <id> --bind 127.0.0.1:1080` — Start a local SOCKS5 relay for this session (client‑hosted rendezvous).
 
 
 - `aw doctor` — Environment diagnostics (snapshot providers, multiplexer availability, docker/devcontainer, git).
