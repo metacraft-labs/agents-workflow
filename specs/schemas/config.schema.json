@@ -1,0 +1,107 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://blocksense.dev/schemas/agents-workflow/config.schema.json",
+  "title": "Agents-Workflow Configuration",
+  "type": "object",
+  "additionalProperties": false,
+  "$defs": {
+    "LogLevel": { "type": "string", "enum": ["debug", "info", "warn", "error"] },
+    "Mode": { "type": "string", "enum": ["auto", "local", "rest"] },
+    "Multiplexer": { "type": "string", "enum": ["tmux", "zellij", "screen"] },
+    "Vcs": { "type": "string", "enum": ["git", "hg", "bzr", "fossil"] },
+    "DevEnv": { "type": "string", "enum": ["nix", "spack", "bazel", "none", "no", "custom"] },
+    "TaskRunner": { "type": "string", "enum": ["just", "make"] },
+    "AgentName": {
+      "type": "string",
+      "enum": [
+        "generic",
+        "codex",
+        "copilot",
+        "claude",
+        "gemini",
+        "cursor",
+        "windsurf",
+        "zed",
+        "cline",
+        "roo",
+        "jetbrains",
+        "openhands"
+      ]
+    },
+    "SupportedAgents": {
+      "oneOf": [
+        { "type": "string", "const": "all" },
+        { "type": "array", "items": { "$ref": "#/$defs/AgentName" }, "uniqueItems": true }
+      ]
+    },
+    "YesNo": { "type": "boolean" },
+    "Uri": { "type": "string", "format": "uri" }
+  },
+  "properties": {
+    "tui": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "defaultMode": { "$ref": "#/$defs/Mode" }
+      }
+    },
+    "terminal": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "multiplexer": { "$ref": "#/$defs/Multiplexer" }
+      }
+    },
+    "editor": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "default": { "type": "string", "minLength": 1 }
+      }
+    },
+    "network": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "apiUrl": { "$ref": "#/$defs/Uri" }
+      }
+    },
+    "browserAutomation": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "profile": { "type": "string" },
+        "chatgptUsername": { "type": "string" }
+      }
+    },
+    "codex": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "workspace": { "type": "string" }
+      }
+    },
+    "repo": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "supportedAgents": { "$ref": "#/$defs/SupportedAgents" },
+        "init": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "vcs": { "$ref": "#/$defs/Vcs" },
+            "devenv": { "$ref": "#/$defs/DevEnv" },
+            "devcontainer": { "$ref": "#/$defs/YesNo" },
+            "direnv": { "$ref": "#/$defs/YesNo" },
+            "taskRunner": { "$ref": "#/$defs/TaskRunner" }
+          }
+        }
+      }
+    },
+    "logLevel": { "$ref": "#/$defs/LogLevel" },
+    "mode": { "$ref": "#/$defs/Mode" }
+  }
+}
+

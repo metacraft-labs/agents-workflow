@@ -70,6 +70,7 @@
           pkgs.git
           pkgs.fossil
           pkgs.mercurial
+          pkgs.nodejs # for npx-based docson helper
 
           # AI Coding Assistants (latest versions from nixpkgs-unstable)
           pkgs.goose-cli # Goose AI coding assistant
@@ -77,7 +78,14 @@
           pkgs.gemini-cli # Gemini CLI
           pkgs.codex # OpenAI Codex CLI (Rust implementation)
           pkgs.opencode # OpenCode AI coding assistant
-        ] ++ pkgs.lib.optionals isLinux [
+        ]
+        # Optional schema/validation tooling (only if available in this nixpkgs)
+        ++ (builtins.filter (x: x != null) [
+          (if pkgs ? taplo then pkgs.taplo else null)
+          (if (builtins.hasAttr "nodePackages" pkgs) && (builtins.hasAttr "ajv-cli" pkgs.nodePackages)
+           then pkgs.nodePackages."ajv-cli" else null)
+        ])
+        ++ pkgs.lib.optionals isLinux [
           # Linux-only filesystem utilities for snapshot functionality
           pkgs.zfs # ZFS utilities for copy-on-write snapshots
           pkgs.btrfs-progs # Btrfs utilities for subvolume snapshots
@@ -88,6 +96,9 @@
 
         shellHook = ''
           echo "Agent workflow development environment loaded"
+          # Provide a convenience function to launch Docson without global install
+          docson () { npx -y docson "$@"; }
+          echo "Tip: run: docson -d ./specs/schemas  # then open http://localhost:3000"
         '';
       };
     });

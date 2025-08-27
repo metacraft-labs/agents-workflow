@@ -20,6 +20,11 @@
 - Uses Rake tasks in Rakefile.extras for dependency resolution
 
 ## TODOs — CLI Repo Commands Spec (WIP)
+
+## TODOs — Config Schema
+- Add CI validation of example TOML configs against `specs/schemas/config.schema.json`.
+- Consider an `aw config validate` command and `aw schema print config` for tooling.
+- Track enum reuse centrally in `$defs`; extend with delivery modes, runtimes, auth sources as they are added to the CLI spec.
 - Clarify final command names: typos in draft use "insturctions"; spec adopts `aw repo instructions create` and `aw repo instructions link`. Consider alias `aw repo create-agent-instruction-symlinks` for backwards compatibility with docs.
 - Define exact editor discovery order and env/config keys reused by `aw repo init` when prompting for project description.
 - Specify JSON schemas for `repo init`, `instructions create`, `instructions link`, `repo check`, and `health` in a central place (currently summarized inline in cli-spec.md).
