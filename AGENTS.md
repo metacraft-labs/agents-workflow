@@ -45,6 +45,6 @@ You can consult this file before starting your coding tasks.
 
 ## Writing git commit messages
 
-- You MUST use multiline git commit messages.
+- You MUST use multiline git commit messages using heredoc syntax.
 - Use the convential commits style for the first line of the commit message.
 - Use the summary section of your final response as the remaining lines in the commit message.

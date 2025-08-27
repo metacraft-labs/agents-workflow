@@ -17,15 +17,28 @@ publish-gem:
 
 # Validate all JSON Schemas with ajv (meta-schema compile)
 conf-schema-validate:
+    #!/usr/bin/env bash
     set -euo pipefail
+    if command -v ajv >/dev/null 2>&1; then
+        AJV=ajv
+    else
+        echo "ajv not found; using npx ajv-cli (requires network)" >&2
+        AJV='npx -y ajv-cli'
+    fi
     for f in specs/schemas/*.json; do
         echo Validating $$f
-        ajv compile -s "$$f"
+        $$AJV compile -s "$$f"
     done
     echo All schemas valid.
 
 # Check TOML files with Taplo (uses schema mapping if configured)
 conf-schema-taplo-check:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    if ! command -v taplo >/dev/null 2>&1; then
+        echo "taplo is not installed. Example to run once: nix shell ~/nixpkgs#taplo -c taplo check" >&2
+        exit 127
+    fi
     taplo check
 
 # Serve schema docs locally with Docson (opens http://localhost:3000)
