@@ -4,10 +4,10 @@
 
 The TUI provides a terminal-first dashboard for launching and monitoring agent tasks, integrated with terminal multiplexers (tmux, zellij, screen). It auto-attaches to the active multiplexer session and assumes all active tasks are already visible as multiplexer windows.
 
-Two modes:
+Backends:
 
-- REST mode: Connect to a remote/local REST service and mirror the WebUI experience for task creation, with windows created locally (or remotely via SSH) for launched tasks.
-- Local mode: Operate in the current directory/repo using PID-like files for discovery and local workspace provisioning.
+- REST: Connect to a remote REST service and mirror the WebUI experience for task creation, with windows created locally (or remotely via SSH) for launched tasks.
+- Local: Operate in the current directory/repo using the SQLite state database for discovery and status.
 
 ### Auto-Attach and Window Model
 
@@ -51,7 +51,7 @@ The main TUI dashboard focuses on quick launch:
 ### Error Handling and Status
 
 - Inline validation messages under selectors (e.g., branch not found, agent unsupported).
-- Status bar shows mode (`local`/`rest`), selected multiplexer, and last operation result.
+- Status bar shows backend (`local`/`rest`), selected multiplexer, and last operation result.
 
 ### Remote Sessions
 
@@ -64,5 +64,4 @@ The main TUI dashboard focuses on quick launch:
 ### Accessibility
 
 - High-contrast theme option; full keyboard operation; predictable focus order.
-
 

@@ -170,6 +170,7 @@
   },
   "active": "01bf72509d2b5652",
   "lastOpenFiles": [
+    "docs/state-persistence.md",
     "specs/configuration.md",
     "specs/cli-spec.md",
     "specs/connectivity-layer.md"

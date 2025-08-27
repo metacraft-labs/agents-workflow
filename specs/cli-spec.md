@@ -10,7 +10,7 @@ The CLI honors the layered configuration model in [configuration](configuration.
 
 - One tool for both the TUI dashboard and automation-ready commands
 - First-class support for:
-  - Local directory mode (PID-like files for discovery)
+  - Local state mode (SQLite only)
   - Remote REST service mode (on-prem/private cloud), aligned with `docs/rest-service.md`
   - Terminal multiplexers: tmux, zellij, screen
   - Devcontainers and local runtimes (including unsandboxed, policy-gated)
@@ -20,33 +20,33 @@ The CLI honors the layered configuration model in [configuration](configuration.
 
 - `aw` (no args): Launches the TUI dashboard (default mode described below)
 - Common global flags (apply to all subcommands unless noted):
-  - `--mode <auto|local|rest>`: Discovery/operation mode. Default: `auto` (prefer local when in a repo with `.agents/`; otherwise rest if `network.apiUrl` configured)
-  - `--repo <PATH|URL>`: Target repository (filesystem path in local mode; git URL otherwise)
-  - `--project <NAME>`: Project/workspace name (REST mode)
+  - `--remote-server <NAME|URL>`: If provided, use the REST API at this server (by name lookup in config or raw URL). Otherwise use local SQLite state.
+  - `--repo <PATH|URL>`: Target repository (filesystem path in local runs; git URL may be used by some servers). If omitted, AW auto-detects a VCS root by walking parent directories and checking all supported VCS.
+  - `--workspace <NAME>`: Named workspace (only valid on servers that support workspaces). Errors if unsupported by the selected server.
   - `--json`: Emit machine-readable JSON
   - `--quiet`: Reduce output
   - `--log-level <debug|info|warn|error>`
   - `--no-color`
 
-Configuration mapping examples:
+Configuration mapping examples (dashes preserved in TOML; underscores in ENV/JSON):
 
-- `network.apiUrl` ↔ `--network-api-url`, `AGENTS_WORKFLOW_NETWORK_API_URL`
-- `tui.defaultMode` ↔ `--mode`
+- `remote-server` ↔ `--remote-server`, `AGENTS_WORKFLOW_REMOTE_SERVER`
+- `network.api-url` (per-server) lives under `[[server]]` entries
 - `terminal.multiplexer` ↔ `--multiplexer <tmux|zellij|screen>`
 - `editor.default` ↔ `--editor`
 - `browserAutomation.enabled` ↔ `--browser-automation`, `AGENTS_WORKFLOW_BROWSER_AUTOMATION_ENABLED`
 - `browserAutomation.profile` ↔ `--browser-profile`, `AGENTS_WORKFLOW_BROWSER_PROFILE`
-- `browserAutomation.chatgptUsername` ↔ `--chatgpt-username`, `AGENTS_WORKFLOW_BROWSER_AUTOMATION_CHATGPT_USERNAME`
+- `browserAutomation.chatgpt-username` ↔ `--chatgpt-username`, `AGENTS_WORKFLOW_BROWSER_AUTOMATION_CHATGPT_USERNAME`
 - `codex.workspace` ↔ `--codex-workspace`, `AGENTS_WORKFLOW_CODEX_WORKSPACE`
 
 ### Subcommands
 
 #### 1) TUI
 
-- `aw` or `aw tui [--mode <local|rest>] [--multiplexer <tmux|zellij|screen>]`
+- `aw` or `aw tui [--multiplexer <tmux|zellij|screen>] [--remote-server <NAME|URL>]`
   - Starts the dashboard and auto-attaches to the active multiplexer session (creating one if needed).
-  - Mode `rest`: connects to REST service to retrieve projects/repos/agents/branches and launches local (or remote via SSH) multiplexer windows for new tasks.
-  - Mode `local`: operates in current repository (default), discovering running tasks via PID-like files in the filesystem.
+  - With `--remote-server` (or configured `remote-server`), connects to the REST service to retrieve workspaces/repos/agents/branches and launches local (or remote via SSH) multiplexer windows for new tasks.
+  - Without `--remote-server`, operates against the local SQLite state.
 
 TUI dashboard (simplified quick-launch UI):
 
@@ -60,13 +60,14 @@ Task launch behavior in TUI:
 
 #### 2) Tasks
 
-- `aw task [create] [--prompt <TEXT> | --prompt-file <FILE>] [--repo <PATH|URL>] [--branch <NAME>] [--agent <TYPE>[@VERSION]] [--instances <N>] [--runtime <devcontainer|local|unsandboxed>] [--devcontainer-path <PATH>] [--labels k=v ...] [--delivery <pr|branch|patch>] [--target-branch <NAME>] [--browser-automation <true|false>] [--browser-profile <NAME>] [--chatgpt-username <NAME>] [--codex-workspace <WORKSPACE>] [--yes]`
+- `aw task [create] [--prompt <TEXT> | --prompt-file <FILE>] [--repo <PATH|URL>] [--branch <NAME>] [--agent <TYPE>[@VERSION]] [--instances <N>] [--runtime <devcontainer|local|unsandboxed>] [--devcontainer-path <PATH>] [--labels k=v ...] [--delivery <pr|branch|patch>] [--target-branch <NAME>] [--browser-automation <true|false>] [--browser-profile <NAME>] [--chatgpt-username <NAME>] [--codex-workspace <WORKSPACE>] [--workspace <NAME>] [--fleet <NAME>] [--yes]`
 
 Behavior:
 
-- In local mode, prepares a per-task workspace using snapshot preference order (ZFS > Btrfs > Overlay > copy) and launches the agent.
-- In rest mode, calls `POST /api/v1/tasks` with the provided parameters.
-- Creates/updates a local PID-like session record when launching locally (see “Local Discovery”).
+- With a configured/provided `remote-server`, calls the server’s REST API to create and manage the task.
+- Otherwise, prepares a per-task workspace using snapshot preference order (ZFS > Btrfs > Overlay > copy) and launches the agent locally.
+- Persists session/task state in the local SQLite database; see `docs/state-persistence.md`.
+- Fleet resolution: when `--fleet` is provided (or a default fleet is defined in config), AW expands the fleet into one or more members. For local members, it applies the referenced sandbox profile; for `remote` members, it targets the specified server URL/name. Implementations may run members sequentially or in parallel depending on runtime limits.
 - When `--browser-automation true` (default), launches site-specific browser automation (e.g., Codex) using the selected agent browser profile. When `false`, web automation is skipped.
 - Codex integration: if `--browser-profile` is not specified, discovers or creates a ChatGPT profile per `docs/browser-automation/codex.md`, optionally filtered by `--chatgpt-username`. Workspace is taken from `--codex-workspace` or config; branch is taken from `--branch`.
 - Branch autocompletion uses standard git protocol:
@@ -79,7 +80,7 @@ Draft flow (TUI/Web parity):
 
 #### 3) Sessions
 
-- `aw session list [--status <...>] [--project <...>] [--repo <...>]`
+- `aw session list [--status <...>] [--workspace <...>] [--repo <...>] [--remote-server <NAME|URL>]`
 - `aw session get <SESSION_ID>`
 - `aw session logs <SESSION_ID> [-f] [--tail <N>]`
 - `aw session events <SESSION_ID> [-f]`
@@ -90,7 +91,7 @@ Draft flow (TUI/Web parity):
 
 Behavior:
 
-- Local mode reads session records from filesystem; `logs -f` tails the agent log.
+- Local mode reads session records from the state database; `logs -f` tails the agent log.
 - REST mode proxies to the service and uses SSE for `events -f`.
 
 #### 4) Attach / Open
@@ -104,10 +105,10 @@ Remote sessions:
 
 #### 5) Repositories and Projects
 
-- `aw repo list` (local: from recent usage; rest: from workspace projects)
+- `aw repo list` (local: from recent usage; rest: from server workspaces)
 - `aw repo add <PATH|URL>` (local only by default)
 - `aw repo remove <PATH|URL>` (local; protected confirm)
-- `aw project list` (rest mode)
+- `aw workspace list` (rest mode)
 
 #### 5a) Repo Init & Instructions
 
@@ -241,37 +242,9 @@ Mirrors `docs/configuration.md` including provenance, precedence, and Windows be
 - `aw doctor` — Environment diagnostics (snapshot providers, multiplexer availability, docker/devcontainer, git).
 - `aw completion [bash|zsh|fish|pwsh]` — Shell completions.
 
-### Local Discovery (PID-like Files)
+### Local State
 
-Purpose: Enable TUI and CLI to enumerate and manage running local sessions without a server.
-
-Location:
-
-- Per-repo: `.agents/sessions/` within the repository root.
-- Optional user index: `~/.config/agents-workflow/sessions/` to aggregate across repos (TUI may use this for “recent sessions”).
-
-Record format (JSON example):
-
-```json
-{
-  "id": "01HVZ6K9T1N8S6M3V3Q3F0X5B7",
-  "repoPath": "/home/user/src/app",
-  "workspacePath": "/workspaces/agent-01HVZ6K9",
-  "agent": {"type": "claude-code", "version": "latest"},
-  "runtime": {"type": "devcontainer", "devcontainerPath": ".devcontainer/devcontainer.json"},
-  "multiplexer": {"kind": "tmux", "session": "aw:01HVZ6K9", "window": 3, "paneLeft": "%5", "paneRight": "%6"},
-  "pids": {"agent": 12345},
-  "status": "running",
-  "startedAt": "2025-01-01T12:00:00Z",
-  "logPath": "/workspaces/agent-01HVZ6K9/.agents/logs/agent.log"
-}
-```
-
-Creation and lifecycle:
-
-- `aw task` writes the record on successful launch and updates status transitions.
-- On normal termination, the record is finalized (endedAt, final status) and moved to an archive file.
-- Crash/unclean exit detection: stale PID check on startup; records marked as `failed` with reason.
+Local enumeration and management of running sessions is backed by the canonical state database described in `docs/state-persistence.md`. The SQLite database is authoritative; no PID files are used.
 
 ### Multiplexer Integration
 
@@ -334,7 +307,7 @@ aw attach 01HVZ6K9T1N8S6M3V3Q3F0X5B7 --pane left
 Run the TUI against a REST service:
 
 ```bash
-aw tui --mode rest --multiplexer tmux
+aw tui --remote-server office-1 --multiplexer tmux
 ```
 
 Start local REST service and WebUI for a single developer:
@@ -351,4 +324,3 @@ aw webui --local --port 8080 --rest http://127.0.0.1:8081
 ### Security Notes
 
 - Honors admin-enforced config. Secrets never printed. Unsandboxed runtime gated and requires explicit opt-in.
-

@@ -32,3 +32,10 @@
 - Devcontainer health check: reference the procedure in `specs/devcontainer-setup.md` and `specs/devcontainer-design.md`; formalize a single entrypoint the CLI will call.
 - Config layering: ensure `supported-agents` can be set in system/user/project scopes and overridden by CLI; document keys and env vars.
 - Decide on fallback when multiple instruction sources exist and no `source-file` is provided (current behavior: error; alternative: prompt interactively).
+
+## State Persistence Notes (2025-08-27)
+- Local state uses a canonical SQLite DB; there is no local daemon. See docs/state-persistence.md for selection rules and SQL schema.
+
+## Config Mapping Notes
+- TOML preserves dashes in keys (e.g., `network.api-url`, `tui.default-mode`, `repo.task-runner`).
+- ENV/JSON use underscores for those keys (e.g., `AGENTS_WORKFLOW_NETWORK_API_URL`). See specs/configuration.md.
