@@ -1,0 +1,159 @@
+{
+  "test_configurations": {
+    "quick_test": {
+      "min_work_duration": 0.1,
+      "max_work_duration": 0.5,
+      "create_file_probability": 0.8,
+      "modify_file_probability": 0.3,
+      "read_file_probability": 0.9,
+      "sleep_between_ops": 0.01,
+      "max_generated_lines": 20,
+      "detailed_logging": true
+    },
+    "standard_test": {
+      "min_work_duration": 1.0,
+      "max_work_duration": 3.0,
+      "create_file_probability": 0.6,
+      "modify_file_probability": 0.5,
+      "read_file_probability": 0.8,
+      "sleep_between_ops": 0.05,
+      "max_generated_lines": 50,
+      "detailed_logging": true
+    },
+    "heavy_workload": {
+      "min_work_duration": 3.0,
+      "max_work_duration": 8.0,
+      "create_file_probability": 0.9,
+      "modify_file_probability": 0.7,
+      "read_file_probability": 1.0,
+      "sleep_between_ops": 0.02,
+      "min_files_to_create": 3,
+      "max_files_to_create": 8,
+      "max_generated_lines": 150,
+      "detailed_logging": true
+    },
+    "file_creator": {
+      "min_work_duration": 1.0,
+      "max_work_duration": 2.0,
+      "create_file_probability": 1.0,
+      "modify_file_probability": 0.1,
+      "read_file_probability": 0.5,
+      "min_files_to_create": 5,
+      "max_files_to_create": 10,
+      "generated_file_types": [".rb", ".py", ".js", ".md", ".json"],
+      "detailed_logging": true
+    },
+    "file_modifier": {
+      "min_work_duration": 0.8,
+      "max_work_duration": 2.0,
+      "create_file_probability": 0.2,
+      "modify_file_probability": 1.0,
+      "read_file_probability": 0.9,
+      "min_files_to_modify": 2,
+      "max_files_to_modify": 5,
+      "detailed_logging": true
+    },
+    "reader_analyzer": {
+      "min_work_duration": 0.5,
+      "max_work_duration": 1.5,
+      "create_file_probability": 0.1,
+      "modify_file_probability": 0.1,
+      "read_file_probability": 1.0,
+      "min_files_to_read": 5,
+      "max_files_to_read": 15,
+      "sleep_between_ops": 0.1,
+      "detailed_logging": true
+    },
+    "performance_test": {
+      "min_work_duration": 0.5,
+      "max_work_duration": 2.0,
+      "create_file_probability": 0.6,
+      "modify_file_probability": 0.4,
+      "read_file_probability": 0.8,
+      "sleep_between_ops": 0.01,
+      "max_generated_lines": 100,
+      "detailed_logging": false
+    },
+    "stress_test": {
+      "min_work_duration": 0.2,
+      "max_work_duration": 1.0,
+      "create_file_probability": 0.7,
+      "modify_file_probability": 0.5,
+      "read_file_probability": 0.6,
+      "sleep_between_ops": 0.005,
+      "max_generated_lines": 50,
+      "detailed_logging": false
+    }
+  },
+  "docker_configurations": {
+    "alpine_minimal": {
+      "base_image": "alpine:3.18",
+      "packages": ["ruby", "ruby-json"],
+      "description": "Minimal Alpine Linux with Ruby"
+    },
+    "alpine_full": {
+      "base_image": "alpine:3.18",
+      "packages": ["ruby", "ruby-dev", "ruby-json", "build-base", "git", "btrfs-progs"],
+      "description": "Alpine Linux with development tools and filesystem utilities"
+    }
+  },
+  "test_scenarios": {
+    "isolation_verification": {
+      "description": "Verify complete isolation between concurrent agents",
+      "num_agents": 4,
+      "config": "standard_test",
+      "expected_isolation": true,
+      "max_execution_time": 15
+    },
+    "performance_baseline": {
+      "description": "Establish performance baselines for different providers",
+      "num_agents": 6,
+      "config": "performance_test",
+      "measure_memory": true,
+      "measure_timing": true
+    },
+    "stress_concurrent": {
+      "description": "High concurrency stress test",
+      "num_agents": 12,
+      "config": "stress_test",
+      "max_execution_time": 30,
+      "acceptable_failure_rate": 0.05
+    },
+    "filesystem_scalability": {
+      "description": "Test with repositories of different sizes",
+      "repository_sizes": [
+        {"files": 10, "size_kb": 50},
+        {"files": 100, "size_kb": 500},
+        {"files": 500, "size_kb": 2000}
+      ],
+      "config": "performance_test"
+    }
+  },
+  "provider_expectations": {
+    "ZfsProvider": {
+      "max_snapshot_time": 2.0,
+      "max_cleanup_time": 1.0,
+      "supports_concurrent": true,
+      "efficiency_rating": "excellent"
+    },
+    "BtrfsProvider": {
+      "max_snapshot_time": 3.0,
+      "max_cleanup_time": 2.0,
+      "supports_concurrent": true,
+      "efficiency_rating": "excellent"
+    },
+    "OverlayFsProvider": {
+      "max_snapshot_time": 5.0,
+      "max_cleanup_time": 3.0,
+      "supports_concurrent": true,
+      "efficiency_rating": "good",
+      "requires_privileges": true
+    },
+    "CopyProvider": {
+      "max_snapshot_time": 15.0,
+      "max_cleanup_time": 5.0,
+      "supports_concurrent": true,
+      "efficiency_rating": "acceptable"
+    }
+  }
+}

@@ -1,0 +1,52 @@
+# Alpine Linux Docker image for MockAgent testing
+# This provides a minimal, controlled environment for testing
+# snapshot isolation and concurrent agent execution
+
+FROM alpine:3.18
+
+# Install Ruby and essential tools
+RUN apk add --no-cache \
+    ruby \
+    ruby-dev \
+    ruby-json \
+    build-base \
+    git \
+    curl \
+    bash \
+    && rm -rf /var/cache/apk/*
+
+# Install additional filesystem tools for testing
+RUN apk add --no-cache \
+    btrfs-progs \
+    util-linux \
+    && rm -rf /var/cache/apk/*
+
+# Create workspace directory
+RUN mkdir -p /workspace
+
+# Copy the mock agent and related files
+COPY lib/mock_agent.rb /app/lib/
+COPY bin/mock-agent /app/bin/
+RUN chmod +x /app/bin/mock-agent
+
+# Create a minimal test repository structure in the image
+# This gives agents something realistic to work with
+RUN mkdir -p /workspace/src /workspace/test /workspace/docs && \
+    echo "# Test Repository" > /workspace/README.md && \
+    echo "puts 'Hello, World!'" > /workspace/src/hello.rb && \
+    echo "def add(a, b); a + b; end" > /workspace/src/math.rb && \
+    echo "# Documentation" > /workspace/docs/guide.md && \
+    echo "require 'minitest/autorun'" > /workspace/test/test_math.rb && \
+    echo '{"name": "test-repo", "version": "1.0.0"}' > /workspace/package.json
+
+# Set working directory
+WORKDIR /workspace
+
+# Default command runs the mock agent
+ENTRYPOINT ["/app/bin/mock-agent"]
+CMD ["--workspace", "/workspace"]
+
+# Metadata
+LABEL description="MockAgent test environment for agents-workflow snapshot testing"
+LABEL version="1.0.0"
+LABEL maintainer="agents-workflow"

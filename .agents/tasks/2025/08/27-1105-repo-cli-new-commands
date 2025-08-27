@@ -1,0 +1,262 @@
+Read the work-in-progress specs in the specs folder.
+
+We'll be expanding the CLI spec with some new commands:
+
+* aw repo init [--vcs=git|hg|etc] [--devenv=no|nix|spack|bazel|etc] [--devcontainer=yes|no] [--direnv=yes|no] [--task-runner=just|make|etc] [--supported-agents=all|codex|claude|etc] [optional-project-description-string]
+
+When the project description is not provided. We launch an editor in the standard configurable way and the user enters the project description there
+The aw tool then launches a local agent to initialize the repo. The standard command-line and configuration settings control which agent is used and how it is launched.
+
+git is the default version control system.
+just is the default task runner.
+
+--devenv defaults to nix. "none" is a valid alias of "no"
+--devcontainer is enabled by default
+--direnv is enabled by default
+--supported-agents is set to all by default.
+
+The selected command-line options and project description are combined into a suitable task prompt that is handed off to the agent in conversational mode.
+The prompt suggests to the agent to collect any additional details for initializing the repo from the user. The agent is asked to suggest the use of specific testing frameworks and linters. The instructions tell the agent that if the user approves these choices, at the end of the conversation the agent should create an AGENTS.md file providing the instructions for running the tests and lints using the selected task runner. The init command completes by creating symlinks for all supported agents (see the `aw repo instructions link` command below which executes the same step in an already initialized repo)
+
+* aw repo instructions create
+
+Uses a similar process to the init command above, but the agent is additionally prompted to review the repo before collecting information from the user.
+
+* aw repo instructions link [--supported-agents=all|codex|etc] [source-file]
+
+This command will have behavior similar to the following ruby program:
+
+```
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+#
+# sync_agent_links.rb
+#
+# Create relative symlinks from various AI agent "rules" files to AGENTS.md,
+# and add them to git. Supports selecting which agents to target.
+#
+# Examples:
+#   ruby sync_agent_links.rb                           # all agents (default)
+#   ruby sync_agent_links.rb --agents=copilot,claude   # only those agents
+#   ruby sync_agent_links.rb --force                   # overwrite conflicts
+#   ruby sync_agent_links.rb --dry-run                 # preview actions
+#
+# Notes:
+# - Run from anywhere inside the repo (it will cd to repo root).
+# - On Windows, create symlinks via Git Bash or WSL; native symlinks may require admin.
+
+require "optparse"
+require "pathname"
+require "fileutils"
+require "open3"
+
+# ---------- Agent → link targets (relative to repo root) ----------
+AGENT_LINKS = {
+  # Generic catch-alls commonly read by multiple tools
+  "generic"   => ["AGENT.md", "README.agent.md", ".rules"],
+
+  # Specific tools
+  "copilot"   => [".github/copilot-instructions.md",
+                  ".github/instructions/AGENTS.instructions.md"],
+  "claude"    => ["CLAUDE.md"],
+  "gemini"    => ["GEMINI.md"],
+  "cursor"    => [".cursor/rules/AGENTS.mdc", ".cursorrules"],
+  "windsurf"  => [".windsurf/rules/AGENTS.md", ".windsurfrules"],
+  "zed"       => [".rules"], # Zed reads several names; .rules is its native one
+  "cline"     => [".clinerules"],
+  "roo"       => [".roorules"],
+  "jetbrains" => [".aiassistant/rules/AGENTS.md", ".junie/guidelines.md"],
+  "openhands" => [".openhands/microagents/repo.md"],
+}.freeze
+
+VALID_AGENT_NAMES = AGENT_LINKS.keys.sort.freeze
+
+# ---------- CLI options ----------
+opts = {
+  force: false,
+  dry_run: false,
+  agents: nil, # nil means "all"
+}
+
+parser = OptionParser.new do |o|
+  o.banner = "Usage: ruby sync_agent_links.rb [--agents=a,b,c] [--force] [--dry-run]"
+
+  o.on("--agents=LIST", "Comma-separated agent keys (default: all).",
+       "Valid: #{VALID_AGENT_NAMES.join(', ')}") do |list|
+    opts[:agents] = list.split(",").map(&:strip).reject(&:empty?)
+  end
+
+  o.on("--force", "Overwrite existing files/symlinks") { opts[:force] = true }
+  o.on("--dry-run", "Show actions without changing anything") { opts[:dry_run] = true }
+  o.on("-h", "--help", "Show this help") { puts o; exit 0 }
+end
+
+begin
+  parser.parse!
+rescue OptionParser::ParseError => e
+  warn e.message
+  warn parser
+  exit 1
+end
+
+# ---------- Helpers ----------
+def run!(cmd_ary, dry:)
+  if dry
+    puts "[dry-run] #{cmd_ary.join(' ')}"
+    true
+  else
+    system(*cmd_ary)
+  end
+end
+
+def inside_git_repo?
+  system("git", "rev-parse", "--is-inside-work-tree", out: File::NULL, err: File::NULL)
+end
+
+def git_root
+  out, st = Open3.capture2("git", "rev-parse", "--show-toplevel")
+  st.success? ? out.strip : nil
+end
+
+def relpath(from_dir_abs, target_abs)
+  Pathname.new(target_abs).relative_path_from(Pathname.new(from_dir_abs)).to_s
+end
+
+# ---------- Preconditions ----------
+unless inside_git_repo?
+  warn "Error: must run inside a git repository."
+  exit 1
+end
+
+repo_root = git_root
+if repo_root.nil? || repo_root.empty?
+  warn "Error: unable to determine git repo root."
+  exit 1
+end
+
+agents_file = File.join(repo_root, "AGENTS.md")
+unless File.file?(agents_file)
+  warn "Error: #{agents_file} not found. Create it first."
+  exit 1
+end
+
+Dir.chdir(repo_root)
+
+# Determine which agents to act on
+selected_agents =
+  if opts[:agents].nil? || opts[:agents].empty? || opts[:agents].include?("all")
+    VALID_AGENT_NAMES
+  else
+    unknown = opts[:agents] - VALID_AGENT_NAMES
+    unless unknown.empty?
+      warn "Unknown agent(s): #{unknown.join(', ')}"
+      warn "Valid agents: #{VALID_AGENT_NAMES.join(', ')}"
+      exit 1
+    end
+    opts[:agents]
+  end
+
+# Build link target list
+links = selected_agents.flat_map { |k| AGENT_LINKS[k] }.uniq
+
+puts "Repo: #{repo_root}"
+puts "AGENTS.md: #{agents_file}"
+puts "Agents: #{selected_agents.join(', ')}"
+puts "Links to create: #{links.size}"
+puts
+
+created = 0
+skipped = 0
+git_added = 0
+
+links.each do |link_rel|
+  link_path = File.join(repo_root, link_rel)
+  link_dir  = File.dirname(link_path)
+
+  # Ensure parent directory exists
+  unless Dir.exist?(link_dir)
+    if opts[:dry_run]
+      puts "[dry-run] mkdir -p #{link_dir}"
+    else
+      FileUtils.mkdir_p(link_dir)
+    end
+  end
+
+  # Compute relative target path from link's directory to AGENTS.md
+  rel_to_agents = relpath(link_dir, agents_file)
+
+  # Handle existing files/symlinks
+  if File.symlink?(link_path)
+    current = File.readlink(link_path) rescue nil
+    if current == rel_to_agents && !opts[:force]
+      puts "OK (already linked): #{link_rel} -> #{current}"
+      skipped += 1
+      next
+    end
+
+    if opts[:force]
+      puts "Rewriting symlink: #{link_rel}"
+      if opts[:dry_run]
+        puts "[dry-run] rm -f #{link_rel}"
+      else
+        FileUtils.rm_f(link_path)
+      end
+    else
+      puts "Skip (different symlink; use --force): #{link_rel} -> #{current}"
+      skipped += 1
+      next
+    end
+  elsif File.exist?(link_path)
+    if opts[:force]
+      puts "Replacing file: #{link_rel}"
+      if opts[:dry_run]
+        puts "[dry-run] rm -f #{link_rel}"
+      else
+        FileUtils.rm_f(link_path)
+      end
+    else
+      puts "Skip (exists and not a symlink): #{link_rel}"
+      skipped += 1
+      next
+    end
+  end
+
+  # Create symlink (relative)
+  if opts[:dry_run]
+    puts "[dry-run] ln -s #{rel_to_agents} #{link_rel}"
+  else
+    File.symlink(rel_to_agents, link_path)
+  end
+  created += 1
+
+  # git add -f
+  if run!(["git", "add", "-f", link_rel], dry: opts[:dry_run])
+    git_added += 1
+  end
+end
+
+puts
+puts "Done."
+puts "Created: #{created}   Skipped: #{skipped}   Git-added: #{git_added}"
+puts "(dry-run: nothing actually changed)" if opts[:dry_run]
+
+```
+
+When a source-file is not provided, the command will look for an existing instructions file (for one of the supported agents).
+If there is a single existing instructions file, it would be assumed to be the source file.
+
+* aw repo check [--supported-agents=...]
+
+This command will perform various checks:
+
+* Are there instruction files? Print information about the missing ones if there is disagreement with the supported-agents configuration value (remember, this configuration value can be supplied on the command-line here, but it may also appear in a configuration file within the repo, in the user home folder, on the system, etc).
+
+* Is there a devcontainer setup? Does its own health check procedure pass (please document that such procedure will be available in the devcontainer spec)
+
+* aw health [--supported-agents=...]
+
+Performs diagnostic health checks for the presence and login status of the configured agentic tools.
+
+Don't write any code. We are currently working on the spec.
+
+Create a precise copy of these instructions in the .agents/task folder as the `agent-task` tool usually does.

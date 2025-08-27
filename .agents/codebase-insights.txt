@@ -19,3 +19,11 @@
 - Set EXTRAS="nix,direnv,cachix" with flexible delimiter parsing
 - Uses Rake tasks in Rakefile.extras for dependency resolution
 
+## TODOs — CLI Repo Commands Spec (WIP)
+- Clarify final command names: typos in draft use "insturctions"; spec adopts `aw repo instructions create` and `aw repo instructions link`. Consider alias `aw repo create-agent-instruction-symlinks` for backwards compatibility with docs.
+- Define exact editor discovery order and env/config keys reused by `aw repo init` when prompting for project description.
+- Specify JSON schemas for `repo init`, `instructions create`, `instructions link`, `repo check`, and `health` in a central place (currently summarized inline in cli-spec.md).
+- Enumerate supported agent sets and mapping to link targets (align with the reference Ruby example). Ensure Windows notes (Git Bash/WSL symlinks) are captured in docs.
+- Devcontainer health check: reference the procedure in `specs/devcontainer-setup.md` and `specs/devcontainer-design.md`; formalize a single entrypoint the CLI will call.
+- Config layering: ensure `supported-agents` can be set in system/user/project scopes and overridden by CLI; document keys and env vars.
+- Decide on fallback when multiple instruction sources exist and no `source-file` is provided (current behavior: error; alternative: prompt interactively).

@@ -109,6 +109,94 @@ Remote sessions:
 - `aw repo remove <PATH|URL>` (local; protected confirm)
 - `aw project list` (rest mode)
 
+#### 5a) Repo Init & Instructions
+
+- `aw repo init [--vcs <git|hg|bzr|fossil>] [--devenv <no|none|nix|spack|bazel|custom>] [--devcontainer <yes|no>] [--direnv <yes|no>] [--task-runner <just|make|...>] [--supported-agents <all|codex|claude|cursor|windsurf|zed|copilot|...>] [project-description]`
+
+Behavior and defaults:
+
+- Defaults: `--vcs git`, `--task-runner just`, `--devenv nix`, `--devcontainer yes`, `--direnv yes`, `--supported-agents all`. `none` is an alias of `no` for `--devenv`.
+- Project description: If omitted, launch the configured editor to collect it (uses the standard editor discovery/order; honors env and config). Aborts on empty description.
+- Agent-driven initialization: Combines the selected options and the description into a task prompt and launches a local agent in conversational mode to initialize the repo. The prompt instructs the agent to:
+  - Propose testing frameworks and linters appropriate for the project; ask the user for approval.
+  - Upon approval, generate an `AGENTS.md` documenting how to run tests and lints using the selected task runner.
+- Post-initialization linking: After `AGENTS.md` exists, create symlinks for all supported agents so their instruction files resolve to `AGENTS.md` (same behavior as `aw repo instructions link --supported-agents=<...>`). Relative symlinks; add to VCS.
+- Dev environment scaffolding: Based on flags, scaffold devcontainer, direnv, and the development environment (e.g., Nix flake) using the agent flow. `--devenv no|none` skips dev env scaffolding.
+- VCS: Initializes the selected VCS if the directory is not yet a repository; for existing repos, proceeds without reinitializing.
+
+Editor behavior:
+
+- Editor resolution follows the standard order defined by configuration (CLI flag, env, config, PATH discovery) and supports non-interactive failure with a clear error and `--prompt-file` alternative where applicable.
+
+Output and exit codes:
+
+- Human-readable status by default; `--json` emits a structured result with keys: `repoRoot`, `vcs`, `devenv`, `devcontainer`, `direnv`, `taskRunner`, `supportedAgents`, `agentsMdCreated`, `symlinksCreated`, `agentSessionId` (if applicable).
+- Exit codes: 0 on success; non-zero for validation errors, editor launch failure, agent launch failure, VCS errors, or filesystem permission issues.
+
+Examples:
+
+```bash
+aw repo init --task-runner just --devenv nix --devcontainer yes --direnv yes "CLI tool for repo automation"
+aw repo init --vcs hg --devenv none --devcontainer no --direnv no  # no dev env scaffolding
+```
+
+- `aw repo instructions create [--supported-agents <...>]`
+
+Behavior:
+
+- Similar to `repo init`, but intended for existing repositories. The agent is explicitly instructed to review the repo before collecting additional details from the user and to propose testing frameworks and linters if missing or misconfigured. Upon approval, writes or updates `AGENTS.md` with task‑runner specific instructions and then creates agent instruction symlinks as in `instructions link`.
+
+Output and exit codes:
+
+- Mirrors `repo init` keys where applicable; adds `reviewFindings` list in `--json` mode.
+
+- `aw repo instructions link [--supported-agents <all|codex|claude|cursor|windsurf|zed|copilot|...>] [source-file] [--force] [--dry-run]`
+
+Behavior:
+
+- Creates relative symlinks from various agent instruction locations to a single source file (default: `AGENTS.md`). Supports selecting which agent toolchains to target via `--supported-agents` (default: `all`).
+- If `source-file` is not provided, and exactly one known instruction file exists in the repo, use it as the source; otherwise require `source-file` or emit a clear error.
+- On conflicts:
+  - Existing identical symlink → no‑op.
+  - Existing different symlink or regular file → require `--force` or skip with a warning.
+- Always create parent directories as needed. After creating symlinks, add them to VCS (`git add -f` or tool‑equivalent) when the repo is cleanly detected.
+
+Reference behavior (informative):
+
+- Matches the reference Ruby script provided in the spec (relative symlinks, agent sets, dry‑run).
+
+JSON output and exit codes:
+
+- `--json` emits `{ repoRoot, source, agents:[], created: N, skipped: N, gitAdded: N }`. Non‑zero exit when preconditions fail (no repo, missing source, unknown agents).
+
+Notes:
+
+- In `repo init` and `repo instructions create`, this symlink step is executed automatically after `AGENTS.md` exists.
+
+- `aw repo check [--supported-agents <...>]`
+
+Behavior:
+
+- Validates repository state against configuration and best practices:
+  - Instruction files: verify that `AGENTS.md` (or chosen source) exists and that symlinks for the configured `supported-agents` are present. Report any mismatches or missing links and suggest `aw repo instructions link` to fix.
+  - Devcontainer: check for presence of `.devcontainer/` and run its health‑check procedure (documented in `specs/devcontainer-setup.md` and `specs/devcontainer-design.md`). Report status and hints to fix.
+  - Dev environment: check `--devenv` (from config/flags) coherence with project files (e.g., Nix flake, direnv). Report inconsistencies.
+
+Output and exit codes:
+
+- Human‑readable summary with per‑check status; `--json` emits a structured report: `{ instructions: { ok, missing:[], extra:[] }, devcontainer: { ok, health: { passed, details } }, devenv: { ok, details } }`. Non‑zero exit if any critical check fails.
+
+- `aw health [--supported-agents <...>]`
+
+Behavior:
+
+- Performs diagnostic health checks for the presence and login/auth status of configured agentic tools (e.g., Codex, Claude, Cursor, Windsurf, Copilot, OpenHands). For each tool, detect CLI/SDK presence and attempt a lightweight auth status probe (non‑destructive). Honors `supported-agents` from config/flags; default is `all`.
+
+Output and exit codes:
+
+- Human‑readable table by default; `--json` emits `{ agent: { present, version, authenticated, details } }` per tool. Non‑zero exit if any requested agent tool is present but unauthenticated, unless `--quiet` and policy permit soft warnings.
+
+
 #### 6) Runtimes, Agents, Hosts (capabilities)
 
 - `aw agents list`
@@ -263,5 +351,4 @@ aw webui --local --port 8080 --rest http://127.0.0.1:8081
 ### Security Notes
 
 - Honors admin-enforced config. Secrets never printed. Unsandboxed runtime gated and requires explicit opt-in.
-
 
