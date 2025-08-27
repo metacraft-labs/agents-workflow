@@ -9,14 +9,35 @@
 * Motivation and support for tracking the origin of each configuration value, with use cases such as: debug-level log reporting, enforced setting explanation, and editor pre-fill mes
 sages.
 
-Layered configuration supports system, user, project, and project-user scopes. Values can also be supplied via environment variables and CLI flags. See [cli-spec](cli-spec.md) for flag mappings.
+Layered configuration supports system, user, project, and project-user scopes. Values can also be supplied via environment variables and CLI flags. See [CLI](CLI.md) for flag mappings.
+
+### Locations (by scope)
+
+- System (OS‑level):
+  - Linux: `/etc/agents-workflow/config.toml`
+  - macOS: `/Library/Application Support/agents-workflow/config.toml`
+  - Windows: `%ProgramData%/Agents-Workflow/config.toml`
+- User:
+  - Linux: `$XDG_CONFIG_HOME/agents-workflow/config.toml` or `$HOME/.config/agents-workflow/config.toml`
+  - macOS: `$HOME/Library/Application Support/agents-workflow/config.toml`
+  - Windows: `%APPDATA%/Agents-Workflow/config.toml` (precedence is given to `~/.config` when both exist as noted below)
+- Project: `<repo>/.agents/config.toml`
+- Project‑user: `<repo>/.agents/config.user.toml` (ignored by VCS; add to `.gitignore`)
+
+Paths are illustrative; the CLI prints the exact search order in `aw config --explain` and logs them at debug level.
+
+### Admin‑enforced values
+
+Enterprise deployments may enforce specific keys at the System scope. Enforced values are read‑only to lower scopes. The CLI surfaces enforcement in `aw config get --explain <key>` output and prevents writes with a clear error. See the initial rationale in [Configuration](../Initial%20Developer%20Input/Configuration.md).
+
+TODO: In other documents, there are still suggested options that don't match the convention below (for example, `ui.default`). Per this convention, the option can be named just `ui`, because this would read best on the command line `aw --ui web`. Look for other similar violations and fix them.
 
 ### Mapping Rules (Flags ↔ Config ↔ ENV/JSON)
-
 To keep things mechanical and predictable:
 
 - TOML sections correspond to subcommand groups (e.g., `[repo]` for `aw repo ...`).
-- Option keys preserve dashes in TOML (e.g., `default-mode`, `task-runner`).
+- CLI option keys preserve dashes in TOML (e.g., `default-mode`, `task-runner`). The name of the options should be chosen to read well both on the command-line and inside a configuration file.
+- There are options that are available only within configuration files (e.g. `[[fleet]]` as described below).
 - JSON and environment variables replace dashes with underscores. ENV vars keep the `AGENTS_WORKFLOW_` prefix.
 
 Examples:
@@ -28,6 +49,7 @@ Examples:
 
 ### Keys
 
+- ui.default: string — default UI to launch with bare `aw` (`"tui"` | `"webui"`).
 - browserAutomation.enabled: boolean — enable/disable site automation.
 - browserAutomation.profile: string — preferred agent browser profile name.
 - browserAutomation.chatgptUsername: string — optional default ChatGPT username used for profile discovery.
@@ -107,12 +129,20 @@ name = "default"  # chosen when no other fleet is provided
 
 [[sandbox]]
 name = "container"
-type = "container"      # predefined types with their own options (TBD)
+type = "container"      # predefined types with their own options
+
+# Examples (type-specific options are illustrative and optional):
+# [sandbox.options]
+# engine = "docker"           # docker|podman
+# image  = "ghcr.io/aw/agents-base:latest"
+# user   = "1000:1000"        # uid:gid inside the container
+# network = "isolated"         # bridge|host|none|isolated
 ```
 
 Flags and mapping:
 - `--remote-server <NAME|URL>` selects a server (overrides `remote-server` in config).
 - `--fleet <NAME>` selects a fleet; default is the fleet named `default`.
+- Bare `aw` uses `ui.default` to decide between TUI and WebUI (defaults to `tui`).
 
 ### Example TOML (partial)
 

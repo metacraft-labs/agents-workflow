@@ -35,9 +35,17 @@
       ]
     },
     "YesNo": { "type": "boolean" },
-    "Uri": { "type": "string", "format": "uri" }
+    "Uri": { "type": "string", "format": "uri" },
+    "UiDefault": { "type": "string", "enum": ["tui", "webui"] }
   },
   "properties": {
+    "ui": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "default": { "$ref": "#/$defs/UiDefault" }
+      }
+    },
     "tui": {
       "type": "object",
       "additionalProperties": false,
@@ -104,4 +112,3 @@
     "mode": { "$ref": "#/$defs/Mode" }
   }
 }
-

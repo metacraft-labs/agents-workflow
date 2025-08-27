@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "specs/AGENTS.md",
+                "file": "specs/Public/3rd-Party Agents/3rd-Party Agent Description Template.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "AGENTS"
+              "title": "3rd-Party Agent Description Template"
             }
           },
           {
@@ -27,7 +27,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "specs/fs-snapshots/overview.md",
+                "file": "specs/Public/FS Snapshots/FS Snapshots Overview.md",
                 "mode": "source",
                 "source": false,
                 "backlinks": true,
@@ -42,7 +42,7 @@
                 }
               },
               "icon": "lucide-file",
-              "title": "overview"
+              "title": "FS Snapshots Overview"
             }
           }
         ]
@@ -102,7 +102,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300
+    "width": 384.5
   },
   "right": {
     "id": "6bab4bb451c2c34d",
@@ -194,33 +194,38 @@
   },
   "active": "01bf72509d2b5652",
   "lastOpenFiles": [
-    "specs/agent-time-travel.md",
-    "specs/AGENTS.md",
-    "specs/cli-spec.md",
-    "specs/@initial-developer-input/Configuration.md",
-    "specs/@initial-developer-input/WebUI, TUI, REST Service.md",
-    "specs/@initial-developer-input",
-    "specs/local-mode.md",
-    "specs/fs-snapshots/overview.md",
-    "specs/fs-snapshots/milestone_5.md",
-    "specs/fs-snapshots/milestone_4.md",
-    "specs/fs-snapshots/milestone_3.md",
-    "specs/fs-snapshots/milestone_2.md",
-    "specs/fs-snapshots/milestone_1.md",
-    "specs/webui-prd.md",
-    "specs/tui-prd.md",
-    "specs/rest-service.md",
-    "specs/sandbox-profiles.md",
-    "specs/remote-mode.md",
-    "specs/prompt-engineering.md",
-    "specs/multi-os-testing.md",
-    "specs/lima-vm-images.md",
-    "specs/extras-framework.md",
-    "specs/devcontainer-setup.md",
-    "specs/devcontainer-design.md",
-    "specs/connectivity-layer.md",
-    "specs/configuration.md",
-    "specs/schemas/AGENTS.md",
-    "specs/@research"
+    "specs/Public/Nix Devcontainer/Devcontainer User Setup.md",
+    "specs/Public/Nix Devcontainer/Devcontainer Design.md",
+    "specs/Public/Nix Devcontainer/Devcontainer Test Suite.md",
+    "specs/Public/Nix Devcontainer/Devcontainer Cache Guidelines.md",
+    "specs/Public/FS Snapshots/FS Snapshots Overview.md",
+    "specs/Public/Agent Browsers/Agent Browser Profiles.md",
+    "specs/Public/Browser Automation/Codex.md",
+    "specs/Public/Extras Framework.md",
+    "specs/Public/Lima VM Images.md",
+    "specs/Public/AGENTS.md",
+    "specs/Public/Agent Time Travel.md",
+    "specs/Public/Configuration.md",
+    "specs/Public/CLI.md",
+    "specs/Public/WebUI PRD.md",
+    "specs/Public/TUI PRD.md",
+    "specs/Initial Developer Input/WebUI, TUI, REST Service.md",
+    "specs/Public",
+    "specs/Public/Connectivity Layer.md",
+    "specs/Public/Prompt Engineering.md",
+    "specs/Public/REST Service.md",
+    "specs/Public/Sandbox Profiles.md",
+    "specs/Public/Multi-OS Testing.md",
+    "specs/Public/Remote Mode.md",
+    "specs/Public/Local Mode.md",
+    "agent-task-0.1.0.gem",
+    "test/logs/temp_output_20250828_001209.log",
+    "test/temp_test_runner_1756329129.rb",
+    "test/logs/test_run_20250828_001209.log",
+    "specs/Initial Developer Input/Configuration.md",
+    "specs/Initial Developer Input",
+    "specs/Public/FS Snapshots/milestone_5.md",
+    "specs/Public/FS Snapshots/milestone_4.md",
+    "specs/Research"
   ]
 }

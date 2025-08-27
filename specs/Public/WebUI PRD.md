@@ -167,7 +167,7 @@ The WebUI provides a browser-based experience for creating, monitoring, and mana
 
 ### Tech Notes (non-binding)
 
-- SPA using React/Vue/Svelte (choice TBD), SSE for events, OpenAPI client for REST.
+- SPA built with React + Vite + TypeScript (non‑binding default), SSE for events, OpenAPI client for REST.
 - State normalized by session id; optimistic UI for pause/stop/resume.
 
 ### Local Mode (--local)
@@ -187,5 +187,4 @@ The WebUI provides a browser-based experience for creating, monitoring, and mana
   - Hidden sections: Agents, Runtimes, Hosts, multi-tenant Settings.
   - Sessions, Create Task, and basic Settings (local) remain.
   - Delivery flows (PR/branch/patch) are available; features gated by what the local service advertises via `/api/v1/*` capability endpoints.
-
 

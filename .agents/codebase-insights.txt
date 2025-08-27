@@ -39,3 +39,10 @@
 ## Config Mapping Notes
 - TOML preserves dashes in keys (e.g., `network.api-url`, `tui.default-mode`, `repo.task-runner`).
 - ENV/JSON use underscores for those keys (e.g., `AGENTS_WORKFLOW_NETWORK_API_URL`). See specs/configuration.md.
+
+## 2025-08-28 — Spec TODOs addressed
+- Added `ui.default` config key (schema + docs) to control whether bare `aw` launches TUI or WebUI (default: `tui`).
+- Fixed CLI config mapping examples to follow mechanical rules (camelCase in nested keys like `apiUrl`, `chatgptUsername`).
+- Clarified snapshot selection semantics in CLI spec: strategy is chosen by the executing host; leader-only snapshots in fleets.
+- Expanded `sandbox-profiles` with motivations, predefined types, and OS guidance.
+- WebUI tech note now picks React + Vite + TypeScript as the non-binding default.
