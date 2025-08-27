@@ -9,7 +9,7 @@
 * Motivation and support for tracking the origin of each configuration value, with use cases such as: debug-level log reporting, enforced setting explanation, and editor pre-fill mes
 sages.
 
-Layered configuration supports system, user, project, and project-user scopes. Values can also be supplied via environment variables and CLI flags. See [[cli-spec.md]] for flag mappings.
+Layered configuration supports system, user, project, and project-user scopes. Values can also be supplied via environment variables and CLI flags. See [cli-spec](cli-spec.md) for flag mappings.
 
 ### Keys
 
