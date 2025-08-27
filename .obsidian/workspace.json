@@ -20,6 +20,30 @@
               "icon": "lucide-file",
               "title": "cli-spec"
             }
+          },
+          {
+            "id": "cec459d507bf0a2b",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "specs/fs-snapshots/overview.md",
+                "mode": "source",
+                "source": false,
+                "backlinks": true,
+                "backlinkOpts": {
+                  "collapseAll": false,
+                  "extraContext": false,
+                  "sortOrder": "alphabetical",
+                  "showSearch": false,
+                  "searchQuery": "",
+                  "backlinkCollapsed": false,
+                  "unlinkedCollapsed": true
+                }
+              },
+              "icon": "lucide-file",
+              "title": "overview"
+            }
           }
         ]
       }
@@ -53,7 +77,7 @@
             "state": {
               "type": "search",
               "state": {
-                "query": "",
+                "query": "incremental",
                 "matchingCase": false,
                 "explainSearch": false,
                 "collapseAll": false,
@@ -170,9 +194,33 @@
   },
   "active": "01bf72509d2b5652",
   "lastOpenFiles": [
-    "docs/state-persistence.md",
-    "specs/configuration.md",
+    "specs/@initial-developer-input/Configuration.md",
     "specs/cli-spec.md",
-    "specs/connectivity-layer.md"
+    "specs/@initial-developer-input/WebUI, TUI, REST Service.md",
+    "specs/@initial-developer-input",
+    "specs/local-mode.md",
+    "specs/fs-snapshots/overview.md",
+    "specs/fs-snapshots/milestone_5.md",
+    "specs/fs-snapshots/milestone_4.md",
+    "specs/fs-snapshots/milestone_3.md",
+    "specs/fs-snapshots/milestone_2.md",
+    "specs/fs-snapshots/milestone_1.md",
+    "specs/agent-time-travel.md",
+    "specs/webui-prd.md",
+    "specs/tui-prd.md",
+    "specs/rest-service.md",
+    "specs/sandbox-profiles.md",
+    "specs/remote-mode.md",
+    "specs/prompt-engineering.md",
+    "specs/multi-os-testing.md",
+    "specs/lima-vm-images.md",
+    "specs/extras-framework.md",
+    "specs/devcontainer-setup.md",
+    "specs/devcontainer-design.md",
+    "specs/connectivity-layer.md",
+    "specs/configuration.md",
+    "specs/schemas/AGENTS.md",
+    "specs/agents/_template.md",
+    "specs/@research"
   ]
 }

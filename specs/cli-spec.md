@@ -16,18 +16,29 @@ The CLI honors the layered configuration model in [configuration](configuration.
   - Devcontainers and local runtimes (including unsandboxed, policy-gated)
   - IDE integrations (VS Code, Cursor, Windsurf) and terminal-based agents
 
+### Modes of Operation
+
+TODO: Briefly explain local vs remote mode and link their respective markdown files
+TODO: Briefly explain TUI vs WebUI and link to their respective markdown files
+TODO: Point out that the above modes are orthogonal (any combination is possible)
+TODO: Point out that using a fleet can effectively combine local and remote isntances (e.g. I can have a local Linux container that acts a leader for a Windows VM spawned by a remote AW server).
+TODO: Briefly explain the sandbox profiles and how they are another orthogonal setting when launching agents locally.
+
 ### Global Behavior and Flags
 
+TODO: introduce a configuration option that controls whether `aw` launches a tui or a webui by default. The built-in default would be "tui".
 - `aw` (no args): Launches the TUI dashboard (default mode described below)
-- Common global flags (apply to all subcommands unless noted):
+- Common global flags (apply to all subcommands unless noted):  
   - `--remote-server <NAME|URL>`: If provided, use the REST API at this server (by name lookup in config or raw URL). Otherwise use local SQLite state.
   - `--repo <PATH|URL>`: Target repository (filesystem path in local runs; git URL may be used by some servers). If omitted, AW auto-detects a VCS root by walking parent directories and checking all supported VCS.
   - `--workspace <NAME>`: Named workspace (only valid on servers that support workspaces). Errors if unsupported by the selected server.
+  - `--multiplexer <tmux|zellij|screen>`: Which multiplexer to use for when launching a TUI session
   - `--json`: Emit machine-readable JSON
   - `--quiet`: Reduce output
   - `--log-level <debug|info|warn|error>`
   - `--no-color`
 
+TODO: This section is not correct. It's not following the mechanical convention for translating settings name that we have defined in configuration.md
 Configuration mapping examples (dashes preserved in TOML; underscores in ENV/JSON):
 
 - `remote-server` ↔ `--remote-server`, `AGENTS_WORKFLOW_REMOTE_SERVER`
@@ -48,6 +59,7 @@ Configuration mapping examples (dashes preserved in TOML; underscores in ENV/JSO
   - With `--remote-server` (or configured `remote-server`), connects to the REST service to retrieve workspaces/repos/agents/branches and launches local (or remote via SSH) multiplexer windows for new tasks.
   - Without `--remote-server`, operates against the local SQLite state.
 
+TODO: don't duplicate information that should be defined in tui-prd.md. Just refer to this spec here.
 TUI dashboard (simplified quick-launch UI):
 
 - Top: fixed-height selectors for Project, Branch, Agent with filter input and arrow-key navigation (long lists scroll within the viewport).
@@ -58,14 +70,21 @@ Task launch behavior in TUI:
 
 - Creates a new multiplexer window immediately with split panes: right pane shows the agent activity; left pane starts a terminal or configured editor in the task-specific workspace mount.
 
+TODO: Document how in remote mode, the same UI is created, but the client is connected over SSH to the instance(s) spawned by the server. Cover the possible options in the [connectivity-layer](connectivity-layer.md) doc, just mention them here and refer to the doc.
+
 #### 2) Tasks
 
 - `aw task [create] [--prompt <TEXT> | --prompt-file <FILE>] [--repo <PATH|URL>] [--branch <NAME>] [--agent <TYPE>[@VERSION]] [--instances <N>] [--runtime <devcontainer|local|unsandboxed>] [--devcontainer-path <PATH>] [--labels k=v ...] [--delivery <pr|branch|patch>] [--target-branch <NAME>] [--browser-automation <true|false>] [--browser-profile <NAME>] [--chatgpt-username <NAME>] [--codex-workspace <WORKSPACE>] [--workspace <NAME>] [--fleet <NAME>] [--yes]`
 
+TODO:
+The described behavior below seems incomplete. Think about the modes of operation described above. Add to them the ability to spawn tasks on third-party cloud agent platforms, such as Google Jules or OpenAI Cloud Codex (many of the options described above are intended only for this case; clarify that in the spec). I suggest creating a detailed flow chart diagram.
+
+A task can be started either locally (with many modes such as "no sandbox", "custom sandbox", "inside a docker container" (as described in [fs-snapshots-overview](fs-snapshots/overview.md)).
+
 Behavior:
 
 - With a configured/provided `remote-server`, calls the server’s REST API to create and manage the task.
-- Otherwise, prepares a per-task workspace using snapshot preference order (ZFS > Btrfs > Overlay > copy) and launches the agent locally.
+- Otherwise, prepares a per-task workspace using snapshot preference order (ZFS > Btrfs > Overlay > copy) and launches the agent locally. TODO: This is incorrect. The snapshotting strategy is automatically chosen on the basis of 1) the filesystem hosting the current working copy where we start the task. If we start a task with a remote server or a managed VM (e.g. on macOS), the VM image itself uses a particular file system which determines how are we going to create snapshots. When a multi-OS fleet is used, we need to create snapshots only on the leader machine (as explained in [multi-os-testing](multi-os-testing.md)).
 - Persists session/task state in the local SQLite database; see `docs/state-persistence.md`.
 - Fleet resolution: when `--fleet` is provided (or a default fleet is defined in config), AW expands the fleet into one or more members. For local members, it applies the referenced sandbox profile; for `remote` members, it targets the specified server URL/name. Implementations may run members sequentially or in parallel depending on runtime limits.
 - When `--browser-automation true` (default), launches site-specific browser automation (e.g., Codex) using the selected agent browser profile. When `false`, web automation is skipped.
@@ -81,7 +100,8 @@ Draft flow (TUI/Web parity):
 #### 3) Sessions
 
 - `aw session list [--status <...>] [--workspace <...>] [--repo <...>] [--remote-server <NAME|URL>]`
-- `aw session get <SESSION_ID>`
+- `aw session attach <SESSION_ID>`
+- `aw session run <SESSION_ID> process [args]`: Launch a process (e.g. VS Code, Debugger, etc) inside the session namespace, so you can inspect the state of the filesystem, the running processes, etc).
 - `aw session logs <SESSION_ID> [-f] [--tail <N>]`
 - `aw session events <SESSION_ID> [-f]`
 - `aw session stop <SESSION_ID>`
@@ -89,23 +109,21 @@ Draft flow (TUI/Web parity):
 - `aw session resume <SESSION_ID>`
 - `aw session cancel <SESSION_ID>`
 
+
 Behavior:
 
 - Local mode reads session records from the state database; `logs -f` tails the agent log.
 - REST mode proxies to the service and uses SSE for `events -f`.
 
-#### 4) Attach / Open
-
-- `aw attach <SESSION_ID> [--pane <left|right|full>]` — Attach to the multiplexer window for a session.
-- `aw open ide <SESSION_ID> --ide <vscode|cursor|windsurf>` — Open IDE on the session workspace.
-
 Remote sessions:
 
 - When a session runs on another machine (VM or remote host), the REST service returns SSH connection details. `aw attach` uses these to open a remote multiplexer session (e.g., `ssh -t host tmux attach -t <name>`), or to run zellij/screen equivalents.
+  
+  TODO: Since the target machine is unlikely to have a public IP address, we have to define how the connection would be established. One option is for the remote server to provide a proxy (see [Can SSH work over HTTPS?](@research/Can%20SSH%20work%20over%20HTTPS?.md)). Another option is to establish an ephemeral VPN connection between the client and the agent machines (see [connectivity-layer](connectivity-layer.md)).
 
 #### 5) Repositories and Projects
 
-- `aw repo list` (local: from recent usage; rest: from server workspaces)
+- `aw repo list` (local: from recent usage; rest: from server workspaces).
 - `aw repo add <PATH|URL>` (local only by default)
 - `aw repo remove <PATH|URL>` (local; protected confirm)
 - `aw workspace list` (rest mode)
@@ -217,15 +235,15 @@ Mirrors `docs/configuration.md` including provenance, precedence, and Windows be
 
 #### 8) Service and WebUI (local developer convenience)
 
-- `aw serve rest [--local] [--bind 127.0.0.1] [--port <P>] [--db <URL|PATH>]`
-  - Starts the REST service (localhost-only by default with `--local`).
-- `aw webui [--local] [--port <P>] [--rest <URL>]`
+- `aw serve [--bind (default=0.0.0.0)] [--port <P>] [--db <URL|PATH>]`
+  - Starts the REST service.
+- `aw webui [--bind (default=127.0.0.1)] [--port <P>] [--rest <URL>]`
   - Serves the WebUI for local use; in `--local` it binds to `127.0.0.1` and hides admin features.
 
 #### 9) Utilities
 #### 10) Followers and Multi‑OS
 
-- `aw followers list` — List configured follower hosts and tags.
+- `aw followers list` — List configured follower hosts and tags (used for diagnostic purposes).
 - `aw followers sync-fence [--timeout <sec>] [--tag <k=v>]... [--host <name>]... [--all]` — Perform a synchronization fence, ensuring followers match the leader workspace state.
 - `aw run-everywhere [--tag <k=v>]... [--host <name>]... [--all] [--] <command> [args...]` — Invoke run‑everywhere on selected followers.
 
@@ -241,6 +259,10 @@ Mirrors `docs/configuration.md` including provenance, precedence, and Windows be
 
 - `aw doctor` — Environment diagnostics (snapshot providers, multiplexer availability, docker/devcontainer, git).
 - `aw completion [bash|zsh|fish|pwsh]` — Shell completions.
+
+TODO: review the `get-task` and `start-work` commands that are also part of this repo. We'll merge them into the main `aw` command. There commands are intended for use only by the agents in their dev environment, so we'll place them under a common `aw agent` sub-command. The `followers` command is another example of a command that will be used only by agents and thus can sit under the `agents` sub-command.
+
+TODO: Specify how the `aw` command will use lazy loading of its modules by requiring them in Ruby on-demand (based on the entered sub-command) in order to ensure the best possible start-up/execution time.
 
 ### Local State
 
@@ -278,6 +300,8 @@ Devcontainers:
 - Terminal-based agent alongside GUI editor: user can choose an editor in the left pane while the agent runs on the right; alternatively, `--editor` launches `vim`/`emacs`/other terminal editor with an integrated terminal.
 
 ### Examples
+
+TODO: re-format the examples below by breaking long lines, so there are easier to read
 
 Create a task locally and immediately open TUI window/panes:
 
