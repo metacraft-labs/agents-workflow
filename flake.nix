@@ -135,7 +135,7 @@
               command docson "$@"
               return
             fi
-            if [ -n "${IN_NIX_SHELL:-}" ]; then
+            if [ -n "''${IN_NIX_SHELL:-}" ]; then
               echo "Docson is not available in this Nix dev shell. Add it to flake.nix (or choose an alternative) — no fallbacks allowed." >&2
               return 127
             fi

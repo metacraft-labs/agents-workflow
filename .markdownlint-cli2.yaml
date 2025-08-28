@@ -1,0 +1,31 @@
+globs:
+  - "specs/**/*.md"
+
+# markdownlint rule configuration
+config:
+  # Long lines are common in specs; wrap is editor responsibility
+  MD013: false
+  # Do not require first line to be H1 (many spec files start with notes)
+  MD041: false
+  # Allow occasional inline HTML used for complex formatting
+  MD033: false
+  # Allow multiple H1s in documents designed as top-level outlines
+  MD025: false
+  # Do not require languages for every fenced code block
+  MD040: false
+  # Relax spacing/blank-line rules around lists and fences to avoid churn
+  MD031: false
+  MD032: false
+  # Ordered list numbering may reset intentionally in specs
+  MD029: false
+  # List indentation nuances are not enforced strictly
+  MD005: false
+  MD007: false
+  # Do not enforce a specific unordered list marker style across legacy docs
+  MD004: false
+  # Allow emphasized text where it reads better than a heading
+  MD036: false
+  # Multiple blank lines tolerated in long-form docs
+  MD012: false
+  # Heading blank lines not enforced strictly in legacy content
+  MD022: false

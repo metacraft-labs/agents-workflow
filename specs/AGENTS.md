@@ -1,6 +1,8 @@
+# Agents Workflow Specs
+
 This folder contains a work-in-progress specification for the next iteration of the agents-workflow product.
 
-The main ideas of the product are described in the [marketing-one-pager](../../docs/marketing-one-pager.md) document. Please read it.
+The main ideas of the product are described in the [marketing-one-pager](../docs/marketing-one-pager.md) document. Please read it.
 
 Currently, the spec is not finalized and we are not ready to start the implementation of the software. The folder `specs/Initial Developer Input` contains files that should be treated as a ground truth for the specification effort. You are expected to work on the markdown files in the `specs/Public` folder, which should detail everything with a much higher precision, but please note that not all information in them has been fully reviewed by the development team yet.
 
@@ -13,7 +15,8 @@ The public spec should be a stand-alone document that never references other fol
 For each file in the `spec/Public` folder, there will be a corresponding file in the `spec/Implementation Progress` folder. This is a place to store information regarding what was already prototyped or implemented for production use. The files in this folder should contain references to source code files that are a good starting point for someone who wants to see the code behind the spec.
 
 Some of the markdown files have standardized Obsidian headers indicating their current review status. Avoid modifying files with status "Reviewed" or "Final" unless explicitly asked.
-# Specs Maintenance
+
+## Specs Maintenance
 
 - Before committing any change to the `specs/` folder, run `just lint-specs` from the project root. This performs Markdown linting, link checking, spell checking, prose/style linting, and Mermaid diagram validation.
 

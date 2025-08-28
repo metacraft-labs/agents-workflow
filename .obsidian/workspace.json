@@ -194,6 +194,7 @@
   },
   "active": "01bf72509d2b5652",
   "lastOpenFiles": [
+    "specs/Research/Can SSH work over HTTPS.md",
     "docs/marketing-one-pager.md",
     "specs/AGENTS.md",
     "specs/Public/AGENTS.md",
@@ -221,7 +222,6 @@
     "specs/Public/Sandbox Profiles.md",
     "specs/Public/Multi-OS Testing.md",
     "specs/Public/Remote Mode.md",
-    "specs/Public/Local Mode.md",
     "agent-task-0.1.0.gem",
     "test/logs/temp_output_20250828_001209.log",
     "test/temp_test_runner_1756329129.rb",

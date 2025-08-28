@@ -110,7 +110,7 @@ Behavior:
 Remote sessions:
 
 - When a session runs on another machine (VM or remote host), the REST service returns SSH connection details. `aw attach` uses these to open a remote multiplexer session (e.g., `ssh -t host tmux attach -t <name>`), or zellij/screen equivalents.
-- Connectivity options when hosts lack public IPs: (a) SSH over HTTP CONNECT via a proxy; see [Can SSH work over HTTPS?](../Research/Can%20SSH%20work%20over%20HTTPS?.md). (b) Ephemeral overlay networks (Tailscale/NetBird) provisioned per session. (c) Session relays/SOCKS rendezvous as described in [Connectivity Layer](Connectivity%20Layer.md).
+- Connectivity options when hosts lack public IPs: (a) SSH over HTTP CONNECT via a proxy; see [Can SSH work over HTTPS?](../Research/Can%20SSH%20work%20over%20HTTPS.md). (b) Ephemeral overlay networks (Tailscale/NetBird) provisioned per session. (c) Session relays/SOCKS rendezvous as described in [Connectivity Layer](Connectivity%20Layer.md).
 
 #### 5) Repositories and Projects
 
@@ -245,7 +245,7 @@ Mirrors `docs/configuration.md` including provenance, precedence, and Windows be
 - `aw completion [bash|zsh|fish|pwsh]` — Shell completions.
 
 #### 10) Agent Utilities (`aw agent ...`)
-*  Subcommands used only in agent dev environments live under `aw agent ...`. This keeps end‑user command space clean while still scriptable for agents.
+- Subcommands used only in agent dev environments live under `aw agent ...`. This keeps end‑user command space clean while still scriptable for agents.
 - `aw agent get-task` — Helper used by terminal‑style agents to fetch the next task payload (prompt, repo, settings) from the local state or configured REST service and print it as JSON. Honors the same `--remote-server` and `--repo` resolution as `aw task`.
 - `aw agent start-work` — Helper to mark the current task as started (transition status, open logs) and emit initial SessionMoment metadata so timeline recording aligns with agent startup. Prints the session id.
 - `aw agent followers list` — List configured follower hosts and tags (diagnostics; same data as `GET /api/v1/followers` when in REST mode).

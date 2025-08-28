@@ -37,7 +37,7 @@
 
 - Java (Maven/Gradle):
   - Volumes: `~/.m2`, `~/.gradle`.
-  - Ensure Gradle Gradle Enterprise/daemon settings sane for containers.
+  - Ensure Gradle Enterprise/daemon settings are sane for containers.
   - Tests: offline build viability after warm run.
 
 - System Caches (ccache/sccache):
@@ -54,5 +54,4 @@
 
 - Expose cache directories and sizes via `aw doctor`.
 - Emit basic metrics (hits/misses) where tools provide them (cargo, sccache).
-
 

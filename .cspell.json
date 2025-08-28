@@ -1,0 +1,24 @@
+{
+  "$schema": "https://raw.githubusercontent.com/streetsidesoftware/cspell/main/cspell.schema.json",
+  "version": "0.2",
+  "language": "en-US",
+  "useGitignore": true,
+  "ignorePaths": [
+    "specs/Initial Developer Input/**",
+    "specs/Research/**"
+  ],
+  "words": [
+    "Blocksense","zellij","devcontainers","sandboxed","preconfigured","agentic","triager",
+    "Btrfs","NILFS","journaling","asciinema","ttyrec","IPBT","scrollback","subvolume","mkcp","tmpfs","zram","reflink","APFS","wcifs",
+    "preexec","precmd","ALPN","fullchain","privkey","websocat","NTLM","cntlm","creds","pasteable",
+    "netbird","tailscale","healthz","readyz","healthcheck","devshell","parseable",
+    "Unsandboxed","btrfs","seccomp","bwrap","Userspace","bubblewrap","firejail","nsjail","WDAG","keymap","hostnames","netrc","glpat","webui",
+    "OpenHands","openhands","proxytunnel","middleboxes","Subvolume",
+    "postexec","bursty","kexts","headful","Headful","osascript","xprop","wmctrl","gdbus","gsettings","swaymsg","Xwayland",
+    "Automations","affordances","devenv","spack","bazel","direnv","acks","pwsh",
+    "Taplo","taplo","docson","Docson","nvim",
+    "tailscaled","Headscale","tailnet","bytestreams",
+    "cachix","sccache","GOPATH","ccache","substituters","pipx","ZDOTDIR","OPENROUTER","tini","WCAG","automations",
+    "scriptable","Rakefile","Ilib","subvolumes","reflinks","lowerdir","upperdir","venv","MSYS","pytest","rescan","lockfiles","virtualenv","exfiltration"
+  ]
+}
