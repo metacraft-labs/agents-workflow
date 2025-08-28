@@ -123,6 +123,8 @@
         ] ++ pkgs.lib.optionals isDarwin [
           # macOS-only VM manager
           pkgs.lima # Linux virtual machines on macOS
+          # Provide a reproducible Chrome for Puppeteer on macOS (unfree)
+          pkgs.google-chrome
         ];
 
         shellHook = ''
@@ -147,14 +149,15 @@
             fi
           }
           echo "Tip: run: docson -d ./specs/schemas  # then open http://localhost:3000"
-          # Ensure mermaid-cli (mmdc) uses system Chrome/Chromium when present
-          if command -v chromium >/dev/null 2>&1; then
-            export PUPPETEER_EXECUTABLE_PATH="$(command -v chromium)"
-          elif command -v google-chrome >/dev/null 2>&1; then
-            export PUPPETEER_EXECUTABLE_PATH="$(command -v google-chrome)"
-          elif command -v google-chrome-stable >/dev/null 2>&1; then
-            export PUPPETEER_EXECUTABLE_PATH="$(command -v google-chrome-stable)"
-          fi
+          # Use the Nix-provided browser path (fully reproducible)
+          ''
+          + (if isLinux then ''
+            export PUPPETEER_EXECUTABLE_PATH="${pkgs.chromium}/bin/chromium"
+          '' else "")
+          + (if isDarwin then ''
+            export PUPPETEER_EXECUTABLE_PATH="${pkgs.google-chrome}/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+          '' else "")
+          + ''
           export PUPPETEER_PRODUCT=chrome
         '';
       };

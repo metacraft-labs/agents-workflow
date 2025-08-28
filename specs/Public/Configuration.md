@@ -49,8 +49,8 @@ Examples:
 
 ### Keys
 
-- ui: string — default UI to launch with bare `aw` (`"tui"` | `"webui"`).
-- browser-automation: boolean — enable/disable site automation.
+- `ui`: string — default UI to launch with bare `aw` (values: `"tui"` | `"webui"`).
+- `browser-automation`: `boolean` — enable/disable site automation.
 - browser-profile: string — preferred agent browser profile name.
 - chatgpt-username: string — optional default ChatGPT username used for profile discovery.
 - codex-workspace: string — default Codex workspace to select before pressing "Code".
@@ -71,12 +71,12 @@ Examples:
   - Method: parse TOML → convert to a JSON data model → validate against the schema
   - Editors: tools like Taplo can use the JSON Schema to provide completions and diagnostics
 
-- DRY definitions: the schema uses `$defs` for shared enums and shapes reused across the CLI (e.g., `Mode`, `Multiplexer`, `Vcs`, `DevEnv`, `TaskRunner`, `AgentName`, `SupportedAgents`).
+- DRY definitions: the schema uses `$defs` for shared `enums` and shapes reused across the CLI (e.g., `Mode`, `Multiplexer`, `Vcs`, `DevEnv`, `TaskRunner`, `AgentName`, `SupportedAgents`).
 
 Tools in the dev shell:
 
 - `taplo` (taplo-cli): TOML validation with JSON Schema mapping
-- `ajv` (ajv-cli): JSON Schema validator for JSON instances
+- `ajv` (ajv-cli): JSON Schema `validator` for JSON instances
 - `docson` (via shell function): local schema viewer using `npx` (no global install)
 
 Examples (use Just targets inside the Nix dev shell):
