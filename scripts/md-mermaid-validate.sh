@@ -5,10 +5,14 @@ set -euo pipefail
 if command -v mmdc >/dev/null 2>&1; then
   MMDC_CMD="mmdc"
 else
-  # Fallback to npx if available (requires network on first run)
+  # Inside a Nix dev shell we must not fallback; require fixing flake.nix
+  if [[ -n "${IN_NIX_SHELL:-}" ]]; then
+    echo "mmdc (mermaid-cli) not found in Nix dev shell. Fix flake.nix devShell inputs; no fallbacks allowed." >&2
+    exit 127
+  fi
+  # Outside Nix shell: allow best-effort npx fallback with system Chrome/Chromium
   if command -v npx >/dev/null 2>&1; then
     MMDC_CMD="npx -y @mermaid-js/mermaid-cli"
-    # Prefer system Chrome/Chromium if present to avoid downloads
     for bin in chromium chromium-browser google-chrome google-chrome-stable; do
       if command -v "$bin" >/dev/null 2>&1; then
         export PUPPETEER_EXECUTABLE_PATH="$(command -v "$bin")"
@@ -17,12 +21,8 @@ else
         break
       fi
     done
-    if [[ -z "${PUPPETEER_EXECUTABLE_PATH:-}" ]]; then
-      echo "No system Chrome/Chromium found. Without nix develop this fallback requires network to download a headless browser via npx. If that's not possible here, either install Chrome and re-run, or enter 'nix develop'." >&2
-      exit 127
-    fi
   else
-    echo "mmdc (mermaid-cli) not found and no npx fallback. Install via Nix dev shell or Node." >&2
+    echo "mmdc (mermaid-cli) not found. Install mermaid-cli or run inside Nix dev shell." >&2
     exit 127
   fi
 fi

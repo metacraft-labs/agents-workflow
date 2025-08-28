@@ -1,3 +1,15 @@
+#
+# Nix Dev Shell Policy (reproducibility)
+# -------------------------------------
+# When running inside the Nix dev shell (environment variable `IN_NIX_SHELL` is set),
+# Just tasks and helper scripts MUST NOT use fallbacks such as `npx`, brew installs,
+# network downloads, or any ad-hoc tool bootstrap. If a required command is missing
+# in that context, the correct fix is to add it to `flake.nix` (devShell.buildInputs)
+# and re-enter the shell, not to fall back. Outside of the Nix shell, tasks may use
+# best-effort fallbacks for convenience, but scripts should gate them like:
+#   if [ -n "$IN_NIX_SHELL" ]; then echo "missing <tool>; fix flake.nix" >&2; exit 127; fi
+# This keeps `nix develop` fully reproducible and prevents hidden network variability.
+
 # Run the test suite
 
 test:
@@ -22,7 +34,11 @@ conf-schema-validate:
     if command -v ajv >/dev/null 2>&1; then
         AJV=ajv
     else
-        echo "ajv not found; using npx ajv-cli (requires network)" >&2
+        if [ -n "${IN_NIX_SHELL:-}" ]; then
+            echo "Error: 'ajv' is missing inside Nix dev shell. Add pkgs.nodePackages.\"ajv-cli\" to flake.nix devShell inputs." >&2
+            exit 127
+        fi
+        echo "ajv not found; falling back to 'npx ajv-cli' outside Nix shell (requires network)" >&2
         AJV='npx -y ajv-cli'
     fi
     for f in specs/schemas/*.json; do

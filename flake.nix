@@ -107,8 +107,23 @@
 
         shellHook = ''
           echo "Agent workflow development environment loaded"
-          # Provide a convenience function to launch Docson without global install
-          docson () { npx -y docson "$@"; }
+          # Provide a convenience function for Docson; no fallbacks in Nix shell
+          docson () {
+            if command -v docson >/dev/null 2>&1; then
+              command docson "$@"
+              return
+            fi
+            if [ -n "${IN_NIX_SHELL:-}" ]; then
+              echo "Docson is not available in this Nix dev shell. Add it to flake.nix (or choose an alternative) — no fallbacks allowed." >&2
+              return 127
+            fi
+            if command -v npx >/dev/null 2>&1; then
+              npx -y docson "$@"
+            else
+              echo "Docson not found and npx unavailable. Install Docson or enter nix develop with it provisioned." >&2
+              return 127
+            fi
+          }
           echo "Tip: run: docson -d ./specs/schemas  # then open http://localhost:3000"
           # Ensure mermaid-cli (mmdc) uses system Chrome/Chromium when present
           if command -v chromium >/dev/null 2>&1; then
