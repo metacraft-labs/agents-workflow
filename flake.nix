@@ -3,15 +3,34 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    git-hooks.url = "github:cachix/git-hooks.nix";
   };
 
   outputs = {
     self,
     nixpkgs,
+    git-hooks,
   }: let
     systems = ["x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin"];
     forAllSystems = nixpkgs.lib.genAttrs systems;
   in {
+    checks = forAllSystems (system: let
+      pkgs = import nixpkgs { inherit system; };
+      preCommit = git-hooks.lib.${system}.run {
+        src = ./.;
+        hooks = {
+          lint-specs = {
+            enable = true;
+            name = "Lint Markdown specs";
+            entry = "just lint-specs";
+            language = "system";
+            pass_filenames = false;
+          };
+        };
+      };
+    in {
+      pre-commit-check = preCommit;
+    });
     packages = forAllSystems (
       system: let
         pkgs = import nixpkgs {
@@ -106,6 +125,8 @@
         ];
 
         shellHook = ''
+          # Install git pre-commit hook invoking our Nix-defined hooks
+          ${self.checks.${system}.pre-commit-check.shellHook}
           echo "Agent workflow development environment loaded"
           # Provide a convenience function for Docson; no fallbacks in Nix shell
           docson () {

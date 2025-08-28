@@ -8,3 +8,4 @@ test/logs/
 
 # linter cache
 .rubocop-cache/
+.pre-commit-config.yaml
