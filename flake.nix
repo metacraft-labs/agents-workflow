@@ -107,6 +107,7 @@
           pkgs.codex # OpenAI Codex CLI (Rust implementation)
           pkgs.opencode # OpenCode AI coding assistant
         ]
+        ++ self.checks.${system}.pre-commit-check.enabledPackages
         # Optional schema/validation tooling (only if available in this nixpkgs)
         ++ (builtins.filter (x: x != null) [
           (if pkgs ? taplo then pkgs.taplo else null)
