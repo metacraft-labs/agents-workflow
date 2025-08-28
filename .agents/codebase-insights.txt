@@ -47,3 +47,8 @@
 - Clarified snapshot selection semantics in CLI spec: strategy is chosen by the executing host; leader-only snapshots in fleets.
 - Expanded `sandbox-profiles` with motivations, predefined types, and OS guidance.
 - WebUI tech note now picks React + Vite + TypeScript as the non-binding default.
+
+## 2025-08-28 — Markdown linting & Mermaid
+- devShell now includes: `markdownlint-cli2` (Markdown style), `lychee` (link check), `vale` (prose), `cspell` (spelling).
+- Mermaid validation uses `@mermaid-js/mermaid-cli` and prefers system Chrome/Chromium (`PUPPETEER_EXECUTABLE_PATH`).
+- Chromium is added on Linux only; aarch64-darwin lacks a maintained Chromium build in nixpkgs — use a locally installed Chrome on macOS.
