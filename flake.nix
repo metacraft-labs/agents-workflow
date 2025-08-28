@@ -71,6 +71,15 @@
           pkgs.fossil
           pkgs.mercurial
           pkgs.nodejs # for npx-based docson helper
+          # Mermaid validation (diagram syntax)
+          (pkgs.nodePackages."@mermaid-js/mermaid-cli")
+          pkgs.noto-fonts
+
+          # Markdown linting & link/prose checking
+          (pkgs.nodePackages.markdownlint-cli2)
+          pkgs.lychee
+          pkgs.vale
+          (pkgs.nodePackages.cspell)
 
           # AI Coding Assistants (latest versions from nixpkgs-unstable)
           pkgs.goose-cli # Goose AI coding assistant
@@ -86,6 +95,8 @@
            then pkgs.nodePackages."ajv-cli" else null)
         ])
         ++ pkgs.lib.optionals isLinux [
+          # Use Chromium on Linux for mermaid-cli's Puppeteer
+          pkgs.chromium
           # Linux-only filesystem utilities for snapshot functionality
           pkgs.zfs # ZFS utilities for copy-on-write snapshots
           pkgs.btrfs-progs # Btrfs utilities for subvolume snapshots
@@ -99,6 +110,15 @@
           # Provide a convenience function to launch Docson without global install
           docson () { npx -y docson "$@"; }
           echo "Tip: run: docson -d ./specs/schemas  # then open http://localhost:3000"
+          # Ensure mermaid-cli (mmdc) uses system Chrome/Chromium when present
+          if command -v chromium >/dev/null 2>&1; then
+            export PUPPETEER_EXECUTABLE_PATH="$(command -v chromium)"
+          elif command -v google-chrome >/dev/null 2>&1; then
+            export PUPPETEER_EXECUTABLE_PATH="$(command -v google-chrome)"
+          elif command -v google-chrome-stable >/dev/null 2>&1; then
+            export PUPPETEER_EXECUTABLE_PATH="$(command -v google-chrome-stable)"
+          fi
+          export PUPPETEER_PRODUCT=chrome
         '';
       };
     });

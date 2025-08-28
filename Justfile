@@ -44,3 +44,19 @@ conf-schema-taplo-check:
 # Serve schema docs locally with Docson (opens http://localhost:3000)
 conf-schema-docs:
     docson -d specs/schemas
+
+# Validate Mermaid diagrams in Markdown with mermaid-cli (mmdc)
+md-mermaid-check:
+    bash scripts/md-mermaid-validate.sh specs/**/*.md
+
+# Lint Markdown structure/style in specs with markdownlint-cli2
+md-lint:
+    markdownlint-cli2 "specs/**/*.md"
+
+# Check external links in Markdown with lychee
+md-links:
+    lychee --offline false --no-progress --require-https true --max-concurrency 8 "specs/**/*.md"
+
+# Spell-check Markdown with cspell (uses default dictionaries unless configured)
+md-spell:
+    cspell "specs/**/*.md"
