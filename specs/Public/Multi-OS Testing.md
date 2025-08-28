@@ -103,9 +103,9 @@ run-everywhere --host win-12 -- lint
 
 ### CLI Additions (high‑level)
 
-- `aw followers list` — show followers and status.
-- `aw followers sync-fence [--timeout s] [--tag ... | --host ... | --all]`
-- `aw run-everywhere <action> [args...] [--tag ... | --host ... | --all]`
+- `aw agent followers list` — show followers and status.
+- `aw agent followers sync-fence [--timeout s] [--tag ... | --host ... | --all]`
+- `aw agent run-everywhere <action> [args...] [--tag ... | --host ... | --all]`
 
 ### Time‑Travel Integration
 
@@ -136,5 +136,4 @@ run-everywhere --host win-12 -- lint
 See `docs/connectivity-layer.md` for overlay options (Tailscale/Headscale, NetBird, ZeroTier, WireGuard, SSH-only), ephemeral peer modes for short‑lived sessions, and operational guidance.
 
 Fallback relay: If overlays are unavailable, the coordinator can act as a relay by subscribing to per-host SSE logs and forwarding messages (pub/sub) between leader and followers. This preserves basic run‑everywhere semantics at higher latency.
-
 

@@ -176,7 +176,8 @@ The WebUI provides a browser-based experience for creating, monitoring, and mana
 - Invocation: `webui --local [--port <port>]` (command name illustrative). In this mode:
   - Network binding: HTTP server listens on localhost only.
   - Auth and tenancy: No RBAC/tenants; implicit single user. Admin pages are hidden (Agents/Runtimes/Hosts/Settings for multi-tenant ops).
-  - Config discovery: API base URL resolved from config key `network.apiUrl` or env `AGENTS_WORKFLOW_NETWORK_API_URL`; otherwise defaults to `http://127.0.0.1:<default-port>`.
+  - Config discovery: API base URL resolved from config key `service-base-url` or env `AGENTS_WORKFLOW_SERVICE_BASE_URL`; otherwise defaults to `http://127.0.0.1:<default-port>`.
+  - Intention: `service-base-url` is primarily for deployments hosting a persistent WebUI at a fixed URL (e.g., behind an ingress/LB) so the browser knows which REST origin to call. In local development, leave it unset and the WebUI will target localhost by default.
   - IDE integration: Unchanged; IDE launch helpers assume local filesystem access to the workspace mount.
   - Persistence: Uses browser local storage for UI preferences. No external DB required.
   - Security: No TLS in local mode; not intended for remote access.
@@ -187,4 +188,3 @@ The WebUI provides a browser-based experience for creating, monitoring, and mana
   - Hidden sections: Agents, Runtimes, Hosts, multi-tenant Settings.
   - Sessions, Create Task, and basic Settings (local) remain.
   - Delivery flows (PR/branch/patch) are available; features gated by what the local service advertises via `/api/v1/*` capability endpoints.
-

@@ -39,13 +39,7 @@
     "UiDefault": { "type": "string", "enum": ["tui", "webui"] }
   },
   "properties": {
-    "ui": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "default": { "$ref": "#/$defs/UiDefault" }
-      }
-    },
+    "ui": { "$ref": "#/$defs/UiDefault" },
     "tui": {
       "type": "object",
       "additionalProperties": false,

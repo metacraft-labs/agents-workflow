@@ -5,3 +5,6 @@ test/logs/
 
 # Debugger temp files
 .rdbgrc.breakpoints
+
+# linter cache
+.rubocop-cache/

@@ -25,9 +25,9 @@ The CLI honors the layered configuration model in [Configuration](Configuration.
 - **Sandbox profiles (orthogonal):** When launching locally, sandbox profiles define the isolation level (container, VM, bwrap/firejail, or unsandboxed per policy). See [Sandbox Profiles](Sandbox%20Profiles.md) and configuration mapping below.
 
 ### Global Behavior and Flags
-TODO: we don't use config values like `ui.default`. See our naming convention in [Mapping Rules (Flags ↔ Config ↔ ENV/JSON)](Configuration.md#Mapping%20Rules%20(Flags%20↔%20Config%20↔%20ENV/JSON)). This should be renamed to something like `ui`
+Naming consistency: the config key controlling UI selection is `ui`, not `ui.default`.
 
-- `aw` (no args): Launches the default UI (TUI by default). Config key `ui.default` controls TUI vs WebUI; built‑in default is `tui`.
+- `aw` (no args): Launches the default UI (TUI by default). Config key `ui` controls TUI vs WebUI; built‑in default is `tui`.
 - Common global flags (apply to all subcommands unless noted):  
   - `--remote-server <NAME|URL>`: If provided, use the REST API at this server (by name lookup in config or raw URL). Otherwise use local SQLite state.
   - `--repo <PATH|URL>`: Target repository (filesystem path in local runs; git URL may be used by some servers). If omitted, AW auto-detects a VCS root by walking parent directories and checking all supported VCS.
@@ -56,20 +56,21 @@ Behavior overview:
 - Sandbox/runtime: Local runs honor `--runtime`: `devcontainer` (default when available), `local` (process sandbox/profile), or `unsandboxed` (policy‑gated). See [Sandbox Profiles](Sandbox%20Profiles.md) and [FS Snapshots/FS Snapshots Overview](FS%20Snapshots/FS%20Snapshots%20Overview.md).
 
 Flow (high‑level):
-TODO: the following mermaid diagram has a syntax issues. Please install tools in you nix flake, so you can debug them and fix them (you'll have to use `nix develop --command` when launching the tools)
 
 ```mermaid
 flowchart TD
   A[aw task ...] --> B{remote-server?}
-  B -- yes --> C[REST: POST /tasks]
-  C --> D{agent on server or 3rd-party cloud?}
-  D -- server --> E[Provision runtime + snapshot]
-  D -- 3rd-party --> F[Call provider API (capability‑gated flags)]
-  B -- no --> G{runtime}
-  G -- devcontainer --> H[Devcontainer: mount snapshot workspace]
-  G -- local --> I[Process sandbox profile]
-  G -- unsandboxed --> J[Host process (policy‑gated)]
-  H & I & J --> K[Run agent + record session]
+  B -->|yes| C[REST POST /tasks]
+  C --> D{agent runs where?}
+  D -->|server| E[Provision runtime and snapshot]
+  D -->|third party| F[Call provider API capability gated flags]
+  B -->|no| G{runtime}
+  G -->|devcontainer| H[Devcontainer mount snapshot workspace]
+  G -->|local| I[Process sandbox profile]
+  G -->|unsandboxed| J[Host process policy gated]
+  H --> K[Run agent + record session]
+  I --> K
+  J --> K
 ```
 
 Behavior:
@@ -230,14 +231,7 @@ Mirrors `docs/configuration.md` including provenance, precedence, and Windows be
 - `aw webui [--bind (default=127.0.0.1)] [--port <P>] [--rest <URL>]`
   - Serves the WebUI for local use; in `--local` it binds to `127.0.0.1` and hides admin features.
 
-#### 9) Utilities
-#### 10) Followers and Multi‑OS
-
-- `aw followers list` — List configured follower hosts and tags (used for diagnostic purposes).
-- `aw followers sync-fence [--timeout <sec>] [--tag <k=v>]... [--host <name>]... [--all]` — Perform a synchronization fence, ensuring followers match the leader workspace state.
-- `aw run-everywhere [--tag <k=v>]... [--host <name>]... [--all] [--] <command> [args...]` — Invoke run‑everywhere on selected followers.
-
-#### 11) Connectivity (Overlay/Relay)
+#### 9) Connectivity (Overlay/Relay)
 
 - `aw connect keys [--provider netbird|tailscale|auto] [--tag <name>]...` — Request session connectivity credentials.
 - `aw connect handshake --session <id> [--hosts <list>] [--timeout <sec>]` — Initiate and wait for follower acks; prints per‑host status.
@@ -250,11 +244,13 @@ Mirrors `docs/configuration.md` including provenance, precedence, and Windows be
 - `aw doctor` — Environment diagnostics (snapshot providers, multiplexer availability, docker/devcontainer, git).
 - `aw completion [bash|zsh|fish|pwsh]` — Shell completions.
 
-Agent-only utilities and startup performance:
-
-- Subcommands used only in agent dev environments move under `aw agent ...` (e.g., the legacy `get-task` and `start-work` helpers, and the `followers` command). This keeps end‑user command space clean while still scriptable for agents.
-  
-  TODO: You must update the document above, so it matches the intention here. `get-task` and `start-work` should be defined in the spec with their existing functionality and semantics. The `followers` command just need to be moved under the new `agent` sub-command section. Once this is done, you can remove the above bullet point.
+#### 10) Agent Utilities (`aw agent ...`)
+*  Subcommands used only in agent dev environments live under `aw agent ...`. This keeps end‑user command space clean while still scriptable for agents.
+- `aw agent get-task` — Helper used by terminal‑style agents to fetch the next task payload (prompt, repo, settings) from the local state or configured REST service and print it as JSON. Honors the same `--remote-server` and `--repo` resolution as `aw task`.
+- `aw agent start-work` — Helper to mark the current task as started (transition status, open logs) and emit initial SessionMoment metadata so timeline recording aligns with agent startup. Prints the session id.
+- `aw agent followers list` — List configured follower hosts and tags (diagnostics; same data as `GET /api/v1/followers` when in REST mode).
+- `aw agent followers sync-fence [--timeout <sec>] [--tag <k=v>]... [--host <name>]... [--all]` — Perform a synchronization fence ensuring followers match the leader snapshot before execution; emits per‑host status.
+- `aw agent run-everywhere [--tag <k=v>]... [--host <name>]... [--all] [--] <command> [args...]` — Invoke run‑everywhere on selected followers.
 
 ### Subcommand Implementation Strategy
 
@@ -268,7 +264,7 @@ Local enumeration and management of running sessions is backed by the canonical 
 
 Selection:
 
-- `--multiplexer` flag or `terminal.multiplexer` config determines which tool is used. Autodetect if unset (tmux > zellij > screen if found in PATH).
+- `--multiplexer` flag or `terminal-multiplexer` config determines which tool is used. Autodetect if unset (tmux > zellij > screen if found in PATH).
 
 Layout on launch:
 
@@ -309,14 +305,22 @@ aw task \
   --instances 2
 ```
 
-TODO: This example is potentially confusing. The browser profile will be used only when the automation is enabled. The labels suggest codex is used, but this is not specified on the command-line with --agent codex
-
-Specify a browser profile and disable automation explicitly:
+Specify Codex with automation enabled and a specific browser profile:
 
 ```bash
 aw task \
   --prompt "Kick off Codex" \
+  --agent codex \
   --browser-profile work-codex \
+  --browser-automation true
+```
+
+Run without web automation (browser profile is ignored when automation is disabled):
+
+```bash
+aw task \
+  --prompt "Run without web automation" \
+  --agent openhands \
   --browser-automation false
 ```
 

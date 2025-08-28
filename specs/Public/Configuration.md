@@ -30,7 +30,7 @@ Paths are illustrative; the CLI prints the exact search order in `aw config --ex
 
 Enterprise deployments may enforce specific keys at the System scope. Enforced values are read‑only to lower scopes. The CLI surfaces enforcement in `aw config get --explain <key>` output and prevents writes with a clear error. See the initial rationale in [Configuration](../Initial%20Developer%20Input/Configuration.md).
 
-TODO: In other documents, there are still suggested options that don't match the convention below (for example, `ui.default`). Per this convention, the option can be named just `ui`, because this would read best on the command line `aw --ui web`. Look for other similar violations and fix them.
+Use a single key `ui` (not `ui.default`) to control the default UI.
 
 ### Mapping Rules (Flags ↔ Config ↔ ENV/JSON)
 To keep things mechanical and predictable:
@@ -44,16 +44,16 @@ Examples:
 
 - Flag `--remote-server` ↔ TOML `remote-server` ↔ ENV `AGENTS_WORKFLOW_REMOTE_SERVER`
 - Per-server URLs are defined under `[[server]]` entries; `remote-server` may refer to a server `name` or be a raw URL.
-- Flag `--network-api-url` (rarely needed) maps to a specific server entry’s `url`.
+- WebUI-only: key `service-base-url` selects the REST base URL used by the browser client when the WebUI is hosted persistently at a fixed origin.
 - Flag `--task-runner` ↔ TOML `repo.task-runner` ↔ ENV `AGENTS_WORKFLOW_REPO_TASK_RUNNER`
 
 ### Keys
 
-- ui.default: string — default UI to launch with bare `aw` (`"tui"` | `"webui"`).
-- browserAutomation.enabled: boolean — enable/disable site automation.
-- browserAutomation.profile: string — preferred agent browser profile name.
-- browserAutomation.chatgptUsername: string — optional default ChatGPT username used for profile discovery.
-- codex.workspace: string — default Codex workspace to select before pressing "Code".
+- ui: string — default UI to launch with bare `aw` (`"tui"` | `"webui"`).
+- browser-automation: boolean — enable/disable site automation.
+- browser-profile: string — preferred agent browser profile name.
+- chatgpt-username: string — optional default ChatGPT username used for profile discovery.
+- codex-workspace: string — default Codex workspace to select before pressing "Code".
 - remote-server: string — either a known server `name` (from `[[server]]`) or a raw URL. If set, AW uses REST; otherwise it uses local SQLite state.
 
 ### Behavior
@@ -142,29 +142,26 @@ type = "container"      # predefined types with their own options
 Flags and mapping:
 - `--remote-server <NAME|URL>` selects a server (overrides `remote-server` in config).
 - `--fleet <NAME>` selects a fleet; default is the fleet named `default`.
-- Bare `aw` uses `ui.default` to decide between TUI and WebUI (defaults to `tui`).
+- Bare `aw` uses `ui` to decide between TUI and WebUI (defaults to `tui`).
 
 ### Example TOML (partial)
 
 ```toml
-logLevel = "info"
+log-level = "info"
 
-[terminal]
-multiplexer = "tmux"
+terminal-multiplexer = "tmux"
 
-[editor]
-default = "nvim"
+editor = "nvim"
 
-[network]
-api-url = "https://deprecated.example.invalid"  # prefer [[server]] + remote-server
+service-base-url = "https://aw.office-1.corp/api"  # WebUI fetch base; browser calls this URL
 
-[browserAutomation]
-enabled = true
-profile = "work-codex"
+# Browser automation (no subcommand section; single keys match CLI flags)
+browser-automation = true
+browser-profile = "work-codex"
 chatgpt-username = "alice@example.com"
 
-[codex]
-workspace = "main"
+# Codex workspace (single key)
+codex-workspace = "main"
 
 [repo]
 supported-agents = "all" # or ["codex","claude","cursor"]
@@ -178,7 +175,7 @@ supported-agents = "all" # or ["codex","claude","cursor"]
 ```
 
 Notes:
-- `supported-agents` accepts "all" or an explicit array of agent names; the CLI may normalize this value internally.
+- `supportedAgents` accepts "all" or an explicit array of agent names; the CLI may normalize this value internally.
 - `devenv` accepts values like `nix`, `spack`, `bazel`, `none`/`no`, or `custom`.
 
 ENV examples:

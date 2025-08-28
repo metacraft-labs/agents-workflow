@@ -16,7 +16,7 @@ Automate the Codex WebUI to initiate a coding session for a repository/branch us
 6. Launch Playwright with a persistent context in headless mode.
 7. If the expected login is not present, relaunch in visible mode to let the user authenticate, then continue.
 8. Navigate to Codex, select workspace and branch, enter the task description, and press "Code":
-   - Workspace comes from `--codex-workspace` or `config: codex.workspace` (see `docs/configuration.md`).
+   - Workspace comes from `--codex-workspace` or `config: codex-workspace` (see `docs/configuration.md`).
    - Branch comes from the `aw task --branch` value.
 9. Record success.
 
@@ -32,11 +32,10 @@ Controlled via AW configuration (see `docs/cli-spec.md` and `docs/configuration.
 
 - Enable/disable automation for `aw task`.
 - Select or override the agent browser profile name.
-- Set default Codex workspace: `codex.workspace`.
+- Set default Codex workspace: `codex-workspace`.
 
 ### Notes
 
 - Playwright selectors should prefer role/aria/test id attributes to resist UI text changes.
 - Use stable navigation points inside Codex (workspace and branch selectors) and fail fast with helpful error messages when not found; optionally open DevTools in headful mode for investigation.
-
 

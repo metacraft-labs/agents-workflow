@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "specs/Public/3rd-Party Agents/3rd-Party Agent Description Template.md",
+                "file": "specs/Public/CLI.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "3rd-Party Agent Description Template"
+              "title": "CLI"
             }
           },
           {
@@ -102,7 +102,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 384.5
+    "width": 266.5
   },
   "right": {
     "id": "6bab4bb451c2c34d",
@@ -194,6 +194,10 @@
   },
   "active": "01bf72509d2b5652",
   "lastOpenFiles": [
+    "scripts/md-mermaid-validate.sh",
+    "specs/Public/Configuration.md",
+    "specs/Public/CLI.md",
+    "specs/Public/3rd-Party Agents/3rd-Party Agent Description Template.md",
     "specs/Public/Nix Devcontainer/Devcontainer User Setup.md",
     "specs/Public/Nix Devcontainer/Devcontainer Design.md",
     "specs/Public/Nix Devcontainer/Devcontainer Test Suite.md",
@@ -205,8 +209,6 @@
     "specs/Public/Lima VM Images.md",
     "specs/Public/AGENTS.md",
     "specs/Public/Agent Time Travel.md",
-    "specs/Public/Configuration.md",
-    "specs/Public/CLI.md",
     "specs/Public/WebUI PRD.md",
     "specs/Public/TUI PRD.md",
     "specs/Initial Developer Input/WebUI, TUI, REST Service.md",
@@ -224,8 +226,6 @@
     "test/logs/test_run_20250828_001209.log",
     "specs/Initial Developer Input/Configuration.md",
     "specs/Initial Developer Input",
-    "specs/Public/FS Snapshots/milestone_5.md",
-    "specs/Public/FS Snapshots/milestone_4.md",
     "specs/Research"
   ]
 }
