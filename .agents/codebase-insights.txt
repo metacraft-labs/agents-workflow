@@ -52,3 +52,6 @@
 - devShell now includes: `markdownlint-cli2` (Markdown style), `lychee` (link check), `vale` (prose), `cspell` (spelling).
 - Mermaid validation uses `@mermaid-js/mermaid-cli` and prefers system Chrome/Chromium (`PUPPETEER_EXECUTABLE_PATH`).
 - Chromium is added on Linux only; aarch64-darwin lacks a maintained Chromium build in nixpkgs — use a locally installed Chrome on macOS.
+
+## 2025-08-28 — MicroVM image pipeline insight
+- We can define packages once in Nix and emit: (1) OCI images for DevContainers (via `dockerTools`/`nix2container`), (2) raw/QCOW2 disk images for Lima (via `nixos-generators`), and (3) Firecracker/Cloud Hypervisor/QEMU microvm images (via `nixos-generators` + `microvm.nix`). This keeps Lima/DevContainer/MicroVM images aligned from a single flake config.

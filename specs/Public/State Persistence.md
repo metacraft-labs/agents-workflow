@@ -6,7 +6,7 @@ This document specifies how Agents‑Workflow (AW) persists CLI/TUI state locall
 
 - AW operates against one of two backends:
   - **Local SQLite**: the CLI performs state mutations directly against a per‑user SQLite database. Multiple `aw` processes may concurrently read/write this DB.
-  - **Remote REST**: the CLI talks to a remote server which implements the same logical schema and APIs.
+  - **Remote REST**: the CLI talks to a remote server which implements the same logical schema and API endpoints.
 
 Both backends share the same logical data model so behavior is consistent.
 
@@ -153,7 +153,7 @@ CREATE TABLE IF NOT EXISTS kv (
 
 ### Security and Privacy
 
-- Secrets are never stored in plaintext in this DB. Authentication with remote services uses OS‑level keychains or scoped token stores managed by the CLI and/or OS keychain helpers.
+- Secrets are never stored in plain text in this DB. Authentication with remote services uses OS‑level keychains or scoped token stores managed by the CLI and/or OS keychain helpers.
 
 ## Repo Detection
 

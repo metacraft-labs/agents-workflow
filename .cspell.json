@@ -19,6 +19,7 @@
     "Taplo","taplo","docson","Docson","nvim",
     "tailscaled","Headscale","tailnet","bytestreams",
     "cachix","sccache","GOPATH","ccache","substituters","pipx","ZDOTDIR","OPENROUTER","tini","WCAG","automations",
-    "scriptable","Rakefile","Ilib","subvolumes","reflinks","lowerdir","upperdir","venv","MSYS","pytest","rescan","lockfiles","virtualenv","exfiltration"
+    "scriptable","Rakefile","Ilib","subvolumes","reflinks","lowerdir","upperdir","venv","MSYS","pytest","rescan","lockfiles","virtualenv","exfiltration",
+    "LOCALAPPDATA","AUTOINCREMENT","pijul"
   ]
 }

@@ -2,7 +2,7 @@
 
 This folder contains a work-in-progress specification for the next iteration of the agents-workflow product.
 
-The main ideas of the product are described in the [marketing-one-pager](../docs/marketing-one-pager.md) document. Please read it.
+The main ideas of the product are described in the [Product One Pager](../docs/Product%20One%20Pager.md) document. Please read it.
 
 Currently, the spec is not finalized and we are not ready to start the implementation of the software. The folder `specs/Initial Developer Input` contains files that should be treated as a ground truth for the specification effort. You are expected to work on the markdown files in the `specs/Public` folder, which should detail everything with a much higher precision, but please note that not all information in them has been fully reviewed by the development team yet.
 
