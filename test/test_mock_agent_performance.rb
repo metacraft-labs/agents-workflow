@@ -17,14 +17,14 @@ class TestMockAgentPerformance < Minitest::Test
 
     create_test_repository
 
-    puts "\n" + "=" * 60
+    puts "\n#{'=' * 60}"
     puts "Performance Testing with #{@provider.class.name}"
-    puts "=" * 60
+    puts '=' * 60
   end
 
   def teardown
     cleanup_workspaces
-    FileUtils.rm_rf(@original_repo) if Dir.exist?(@original_repo)
+    FileUtils.rm_rf(@original_repo)
   end
 
   def test_snapshot_creation_performance
@@ -34,15 +34,15 @@ class TestMockAgentPerformance < Minitest::Test
     creation_times = []
 
     # Warm up
-    warm_workspace = create_workspace("warmup")
+    warm_workspace = create_workspace('warmup')
     cleanup_workspace(warm_workspace)
 
     # Measure snapshot creation times
     Benchmark.bm(20) do |x|
-      x.report("Sequential creation:") do
+      x.report('Sequential creation:') do
         (1..num_snapshots).each do |i|
           start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
-          workspace = create_workspace("perf_seq_#{i}")
+          create_workspace("perf_seq_#{i}")
           end_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
           creation_times << (end_time - start_time)
         end
@@ -53,7 +53,7 @@ class TestMockAgentPerformance < Minitest::Test
     avg_time = creation_times.sum / creation_times.size
     min_time = creation_times.min
     max_time = creation_times.max
-    std_dev = Math.sqrt(creation_times.map { |t| (t - avg_time) ** 2 }.sum / creation_times.size)
+    std_dev = Math.sqrt(creation_times.map { |t| (t - avg_time)**2 }.sum / creation_times.size)
 
     puts "\nSnapshot Creation Statistics:"
     puts "  Snapshots created: #{num_snapshots}"
@@ -81,7 +81,7 @@ class TestMockAgentPerformance < Minitest::Test
     num_concurrent = [2, 4, 8].min(Etc.nprocessors * 2)
 
     num_concurrent.times do |concurrency|
-      next if concurrency == 0
+      next if concurrency.zero?
 
       puts "\nTesting #{concurrency + 1} concurrent snapshots:"
 
@@ -116,7 +116,7 @@ class TestMockAgentPerformance < Minitest::Test
   def test_agent_execution_performance
     puts "\n--- Agent Execution Performance ---"
 
-    workspace = create_workspace("agent_perf")
+    workspace = create_workspace('agent_perf')
 
     # Test different work durations
     durations = [0.5, 1.0, 2.0, 5.0]
@@ -125,26 +125,26 @@ class TestMockAgentPerformance < Minitest::Test
       puts "\nTesting #{target_duration}s target duration:"
 
       agent = MockAgent.new(workspace, "perf_#{target_duration}", {
-        min_work_duration: target_duration * 0.9,
-        max_work_duration: target_duration * 1.1,
-        create_file_probability: 0.5,
-        modify_file_probability: 0.3,
-        sleep_between_ops: 0.01
-      })
+                              min_work_duration: target_duration * 0.9,
+                              max_work_duration: target_duration * 1.1,
+                              create_file_probability: 0.5,
+                              modify_file_probability: 0.3,
+                              sleep_between_ops: 0.01
+                            })
 
       start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
       result = agent.run_work_session
       actual_duration = Process.clock_gettime(Process::CLOCK_MONOTONIC) - start_time
 
-      assert result[:success], "Agent should complete successfully"
+      assert result[:success], 'Agent should complete successfully'
 
       puts "  Target: #{target_duration}s, Actual: #{actual_duration.round(3)}s"
       puts "  Activities: #{result[:activity_count]}"
       puts "  Overhead: #{((actual_duration - result[:duration]) * 1000).round(1)}ms"
 
       # Verify timing is reasonable
-      assert actual_duration >= target_duration * 0.8, "Should take at least 80% of target time"
-      assert actual_duration <= target_duration * 2.0, "Should not take more than 200% of target time"
+      assert actual_duration >= target_duration * 0.8, 'Should take at least 80% of target time'
+      assert actual_duration <= target_duration * 2.0, 'Should not take more than 200% of target time'
     end
   end
 
@@ -152,7 +152,7 @@ class TestMockAgentPerformance < Minitest::Test
     puts "\n--- Memory Usage Under Load ---"
 
     # Only run this test on systems with memory monitoring
-    if system("which ps > /dev/null 2>&1")
+    if system('which ps > /dev/null 2>&1')
       initial_memory = get_process_memory
 
       num_agents = 6
@@ -162,11 +162,11 @@ class TestMockAgentPerformance < Minitest::Test
       threads = workspaces.map.with_index do |workspace, i|
         Thread.new do
           agent = MockAgent.new(workspace, "memory_#{i + 1}", {
-            min_work_duration: 1.0,
-            max_work_duration: 2.0,
-            create_file_probability: 0.8,
-            max_generated_lines: 200
-          })
+                                  min_work_duration: 1.0,
+                                  max_work_duration: 2.0,
+                                  create_file_probability: 0.8,
+                                  max_generated_lines: 200
+                                })
           agent.run_work_session
         end
       end
@@ -196,7 +196,7 @@ class TestMockAgentPerformance < Minitest::Test
       # Memory usage should be reasonable
       assert memory_increase < 100_000, "Memory increase should be < 100MB (actual: #{memory_increase} KB)"
     else
-      skip "Memory monitoring not available on this system"
+      skip 'Memory monitoring not available on this system'
     end
   end
 
@@ -205,9 +205,9 @@ class TestMockAgentPerformance < Minitest::Test
 
     # Test with repositories of different sizes
     repo_sizes = [
-      { name: "small", files: 10, size_kb: 10 },
-      { name: "medium", files: 100, size_kb: 100 },
-      { name: "large", files: 500, size_kb: 1000 }
+      { name: 'small', files: 10, size_kb: 10 },
+      { name: 'medium', files: 100, size_kb: 100 },
+      { name: 'large', files: 500, size_kb: 1000 }
     ]
 
     repo_sizes.each do |repo_config|
@@ -228,9 +228,9 @@ class TestMockAgentPerformance < Minitest::Test
 
         # Measure agent execution
         agent = MockAgent.new(workspace, "scale_#{repo_config[:name]}", {
-          min_work_duration: 0.5,
-          max_work_duration: 1.0
-        })
+                                min_work_duration: 0.5,
+                                max_work_duration: 1.0
+                              })
 
         start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
         result = agent.run_work_session
@@ -245,8 +245,7 @@ class TestMockAgentPerformance < Minitest::Test
         FileUtils.rm_rf(workspace)
 
         # Performance should scale reasonably
-        assert creation_time < repo_config[:files] * 0.1, "Creation time should scale reasonably with repo size"
-
+        assert creation_time < repo_config[:files] * 0.1, 'Creation time should scale reasonably with repo size'
       ensure
         FileUtils.rm_rf(test_repo)
       end
@@ -275,12 +274,12 @@ class TestMockAgentPerformance < Minitest::Test
       threads = workspaces.map.with_index do |workspace, i|
         Thread.new do
           agent = MockAgent.new(workspace, "stress_#{i + 1}", {
-            min_work_duration: 0.5,
-            max_work_duration: 1.5,
-            create_file_probability: 0.6,
-            modify_file_probability: 0.4,
-            sleep_between_ops: 0.01
-          })
+                                  min_work_duration: 0.5,
+                                  max_work_duration: 1.5,
+                                  create_file_probability: 0.6,
+                                  modify_file_probability: 0.4,
+                                  sleep_between_ops: 0.01
+                                })
 
           start = Process.clock_gettime(Process::CLOCK_MONOTONIC)
           result = agent.run_work_session
@@ -310,9 +309,9 @@ class TestMockAgentPerformance < Minitest::Test
       puts "  Throughput: #{(total_activities / total_execution).round(1)} activities/sec"
 
       # Performance expectations
-      assert successful == num_agents, "All agents should complete successfully"
-      assert setup_time < num_agents * 5.0, "Setup should be reasonably fast"
-      assert total_execution < 10.0, "Execution should complete within reasonable time"
+      assert successful == num_agents, 'All agents should complete successfully'
+      assert setup_time < num_agents * 5.0, 'Setup should be reasonably fast'
+      assert total_execution < 10.0, 'Execution should complete within reasonable time'
 
       # Immediate cleanup for stress test
       workspaces.each { |ws| cleanup_workspace(ws) }
@@ -328,10 +327,13 @@ class TestMockAgentPerformance < Minitest::Test
     FileUtils.mkdir_p(File.join(@original_repo, 'test'))
 
     # Add some files for realistic testing
-    File.write(File.join(@original_repo, 'README.md'), "# Performance Test Repository\n\nThis repository is used for performance testing.\n")
+    File.write(File.join(@original_repo, 'README.md'),
+               "# Performance Test Repository\n\nThis repository is used for performance testing.\n")
     File.write(File.join(@original_repo, 'src', 'main.rb'), "puts 'Hello, World!'\n")
-    File.write(File.join(@original_repo, 'src', 'utils.rb'), "module Utils\n  def self.helper\n    'helper'\n  end\nend\n")
-    File.write(File.join(@original_repo, 'test', 'test_main.rb'), "require 'minitest/autorun'\n\nclass TestMain < Minitest::Test\nend\n")
+    File.write(File.join(@original_repo, 'src', 'utils.rb'),
+               "module Utils\n  def self.helper\n    'helper'\n  end\nend\n")
+    File.write(File.join(@original_repo, 'test', 'test_main.rb'),
+               "require 'minitest/autorun'\n\nclass TestMain < Minitest::Test\nend\n")
   end
 
   def create_sized_repository(path, num_files, total_size_kb)
@@ -350,7 +352,7 @@ class TestMockAgentPerformance < Minitest::Test
                end
 
       file_path = File.join(path, subdir, "file_#{i}.txt")
-      content = "File #{i}\n" + ("x" * [size_per_file - 10, 10].max)
+      content = "File #{i}\n" + ('x' * [size_per_file - 10, 10].max)
       File.write(file_path, content)
     end
   end
@@ -368,7 +370,7 @@ class TestMockAgentPerformance < Minitest::Test
     begin
       @provider.cleanup_workspace(workspace) if @provider.respond_to?(:cleanup_workspace)
       FileUtils.rm_rf(workspace)
-    rescue => e
+    rescue StandardError => e
       puts "Warning: Failed to cleanup #{workspace}: #{e.message}"
     end
   end
@@ -378,12 +380,12 @@ class TestMockAgentPerformance < Minitest::Test
     @workspaces.clear
   end
 
-  def get_process_memory
+  def process_memory
     # Get memory usage of current process in KB
     pid = Process.pid
     memory_line = `ps -o rss= -p #{pid}`.strip
     memory_line.to_i
-  rescue
+  rescue StandardError
     0
   end
 end

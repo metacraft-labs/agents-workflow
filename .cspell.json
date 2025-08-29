@@ -5,7 +5,9 @@
   "useGitignore": true,
   "ignorePaths": [
     "specs/Initial Developer Input/**",
-    "specs/Research/**"
+    "specs/Research/**",
+    "repomix.md",
+    ".obsidian/**"
   ],
   "words": [
     "Blocksense","zellij","devcontainers","sandboxed","preconfigured","agentic","triager",
@@ -20,6 +22,12 @@
     "tailscaled","Headscale","tailnet","bytestreams",
     "cachix","sccache","GOPATH","ccache","substituters","pipx","ZDOTDIR","OPENROUTER","tini","WCAG","automations",
     "scriptable","Rakefile","Ilib","subvolumes","reflinks","lowerdir","upperdir","venv","MSYS","pytest","rescan","lockfiles","virtualenv","exfiltration",
-    "LOCALAPPDATA","AUTOINCREMENT","pijul"
+    "LOCALAPPDATA","AUTOINCREMENT","pijul",
+    "Sandboxing","pids","distro","userns","openat2","overlayfs","slirp","netns","nodev","nosuid","noexec","devpts","ptys","newinstance","GOCACHE","EACCES","EPERM","PTRACER","dumpable","veth","PRIVS","setuid","syscalls","kexec","tunables","DNAT","cgroupfs","netdev","securebits","privs","ADDFD","TOCTOU","fanotify","resolv",
+    "unshares","notif","NEWUSER","newuidmap","newgidmap","NEWNS","NEWPID","NEWUTS","NEWIPC","NEWTIME","NEWNET","hidepid","ptmxmode","urandom","ptmx","setattr","RDONLY","upperdirs","statx","fstatat","faccessat","execve","execveat","linkat","renameat","syscall","MAGICLINKS","NOTIF","errno","tracee","mmap","nftables","chowning","openat",
+    "exitstatus","autorun","mountpoint","rebornix","rdbg","popen","envgen","progname",
+    "tagxref","tagid","tagname","revset","objid","whatchanged","revno","mlink","fnid",
+    "DEVNULL","autosync","fslckout","hgrc","revid","autopush","EDQUOT","Repomix","optparse","hexdigest","mktmpdir","envrc","rubocop","Justfile","Shellwords","shellwords","gettime","nprocessors","pipefail","esac","elif","incovenient","Futhermore","dispay","Rubo","metacraft",
+    "pico","testuser","NOSYSTEM","ASKPASS","subvol","qgroup","Workstreams","binwrite","extensionless","choco","Itest","mswin"
   ]
 }

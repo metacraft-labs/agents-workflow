@@ -38,4 +38,3 @@ Controlled via AW configuration (see `docs/cli-spec.md` and `docs/configuration.
 
 - Playwright selectors should prefer role/aria/test id attributes to resist UI text changes.
 - Use stable navigation points inside Codex (workspace and branch selectors) and fail fast with helpful error messages when not found; optionally open DevTools in headful mode for investigation.
-

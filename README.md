@@ -6,18 +6,18 @@ Copilot, Jules, Gemini, Goose, OpenHands and others.
 
 ## Goals
 
-The workflow adheres to the following principles, which are implemened
-both when workign with local agents and when working with remote agents:
+The workflow adheres to the following principles, which are implemented
+both when working with local agents and when working with remote agents:
 
-1.  **The developer provides a coding task through a convenient command-line interface**
+1. **The developer provides a coding task through a convenient command-line interface**
 
-3.  **The agent works in a secure sandbox environment, without asking for confirmation when using tools**
+2. **The agent works in a secure sandbox environment, without asking for confirmation when using tools**
 
-4.  **The agent presents a complete patch/PR once it reaches a stage where all tests and linters are green**
+3. **The agent presents a complete patch/PR once it reaches a stage where all tests and linters are green**
 
-5.  **It's easy to start multiple tasks in parallel from the current state of your working tree**
+4. **It's easy to start multiple tasks in parallel from the current state of your working tree**
 
-6.  **All tasks are recorded as commits/files in the history of the project**
+5. **All tasks are recorded as commits/files in the history of the project**
 
 Pushing to git becomes the primary interface for starting cloud agents.
 All other interactions with the web UIs of the agents are automated.
@@ -40,15 +40,15 @@ interaction patterns:
 
 ## Other Practical Benefits
 
-* Local agents can leverage ZFS and Btrfs snapshots to provide the best
+- Local agents can leverage ZFS and Btrfs snapshots to provide the best
   possible agent-start up time. The agent takes advantage of incremental
   compilation when building the project and its test suite.
 
-* The same start-up time and incremental compilations are possible when
+- The same start-up time and incremental compilations are possible when
   you dispatch the coding tasks to a cluster of self-managed machines in
   an office environment or a private cloud.
 
-* The workflow smooths out the differences between different agent tools
+- The workflow smooths out the differences between different agent tools
   and cloud environments. Everything can be handled through shared config
   and user interfaces.
 
@@ -56,60 +56,59 @@ interaction patterns:
   and automation to implement new workflows such as automatically creating
   PRs, automatically pushing to specific branches, etc.
 
-* The workflow provides a helpful framework for automatically downloading
+- The workflow provides a helpful framework for automatically downloading
   relevant internet resources before coding tasks start for agents that
   need to operate offline.
 
-* The workflow provides a framework for working in big monorepos that speeds
+- The workflow provides a framework for working in big monorepos that speeds
   up agent start-up times (both locally and it the cloud) and helps with
   managing the context of the agent in such repositories.
 
 ## Using the Workflow
 
-1.  **Starting a Task (Developer):**
+1. **Starting a Task (Developer):**
 
-    When a developer needs to assign a task to the agent, they run
-    the `agent-task` command. If a branch name is provided it starts a
-    new branch, otherwise it appends a follow-up task on the current
-    branch.
+   When a developer needs to assign a task to the agent, they run
+   the `agent-task` command. If a branch name is provided it starts a
+   new branch, otherwise it appends a follow-up task on the current
+   branch.
 
-    ```bash
-    agent-task [branch-name]
-    ```
+   ```bash
+   agent-task [branch-name]
+   ```
 
-    This script will:
-    -   When a branch name is supplied, create the branch first and abort
-        early with the VCS error message if the name is invalid.
-    -   Prompt the developer to enter the task description in an editor.
-    -   Commit the task description to a file within a `.agents/tasks/`
-        directory on the new branch or append it as a follow-up task if
-        no branch was given.
-    -   Push the branch to the default remote.
+   This script will:
+   - When a branch name is supplied, create the branch first and abort
+     early with the VCS error message if the name is invalid.
+   - Prompt the developer to enter the task description in an editor.
+   - Commit the task description to a file within a `.agents/tasks/`
+     directory on the new branch or append it as a follow-up task if
+     no branch was given.
+   - Push the branch to the default remote.
 
-    The command accepts a few options for non-interactive use:
+   The command accepts a few options for non-interactive use:
+   - `--push-to-remote=BOOL` – automatically push to the default remote without prompting.
+   - `--prompt=STRING` – use `STRING` as the task description instead of launching an editor.
+   - `--prompt-file=FILE` – read the task description from `FILE`.
+   - `--devshell=NAME` (`-s`) – record the given Nix dev shell in the initial commit message.
 
-    - `--push-to-remote=BOOL` – automatically push to the default remote without prompting.
-    - `--prompt=STRING` – use `STRING` as the task description instead of launching an editor.
-    - `--prompt-file=FILE` – read the task description from `FILE`.
-    - `--devshell=NAME` (`-s`) – record the given Nix dev shell in the initial commit message.
+   The command also provides a `setup` subcommand that prints the versions of `codex` and `goose` available in the current `PATH`.
 
-    The command also provides a `setup` subcommand that prints the versions of `codex` and `goose` available in the current `PATH`.
+2. **Retrieving a Task (Coding Agent):**
 
-2.  **Retrieving a Task (Coding Agent):**
+   Once the developer has set up the task, they instruct the agent to
+   switch to the right branch and retrieve its instructions.
+   A typical prompt for an agent would be:
 
-    Once the developer has set up the task, they instruct the agent to
-    switch to the right branch and retrieve its instructions.
-    A typical prompt for an agent would be:
+   ```
+   Run the `get-task` command and follow the provided instructions.
+   ```
 
-    ```
-    Run the `get-task` command and follow the provided instructions.
-    ```
-
-    The `get-task` script will print the task description for the agent,
-    along with instructions for accessing the downloaded internet resources
-    and working with the git history.
-    It also supports a `--get-setup-env` option which prints only the
-    environment variable assignments gathered from `@agents-setup` lines.
+   The `get-task` script will print the task description for the agent,
+   along with instructions for accessing the downloaded internet resources
+   and working with the git history.
+   It also supports a `--get-setup-env` option which prints only the
+   environment variable assignments gathered from `@agents-setup` lines.
 
 ### Workflow Commands
 
@@ -235,16 +234,17 @@ nix profile install github:metacraft-labs/agents-workflow#agent-utils
 ### What's included?
 
 The core components include:
--   `codex-setup`: A script to initialize the workspace, download necessary internet resources, and run project-specific setup.
--   `agent-task`: A script for developers to begin a new task, automatically creating a dedicated branch and storing the task description.
--   `agent-task setup`: Prints the versions of `codex` and `goose` available in `PATH`.
--   `get-task`: A script for the coding agent to retrieve its current task instructions.
--   `start-work`: A helper that configures a freshly checked-out repository for development.
--   `download-internet-resources`: A helper script that scans task descriptions for URLs and downloads them (or clones Git repositories) for offline access.
+
+- `codex-setup`: A script to initialize the workspace, download necessary internet resources, and run project-specific setup.
+- `agent-task`: A script for developers to begin a new task, automatically creating a dedicated branch and storing the task description.
+- `agent-task setup`: Prints the versions of `codex` and `goose` available in `PATH`.
+- `get-task`: A script for the coding agent to retrieve its current task instructions.
+- `start-work`: A helper that configures a freshly checked-out repository for development.
+- `download-internet-resources`: A helper script that scans task descriptions for URLs and downloads them (or clones Git repositories) for offline access.
 
 ## Future Direction
 
 We envision that the manual step of prompting the agent to run `get-task` could be automated in the future through:
 
--   An API integration with Codex.
--   (interim) A browser extension that drives the Codex WebUI.
+- An API integration with Codex.
+- (interim) A browser extension that drives the Codex WebUI.

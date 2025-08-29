@@ -1,13 +1,12 @@
-
 ## AW Configuration
 
 ### Overview
 
-* `aw config` subcommand with Git-like interface for reading and updating configuration.
-* Schema validation on both config file loading and CLI-based modification.
-* Precedence for `~/.config` over `%APPDATA%` on Windows only when both are present.
-* Motivation and support for tracking the origin of each configuration value, with use cases such as: debug-level log reporting, enforced setting explanation, and editor pre-fill mes
-sages.
+- `aw config` subcommand with Git-like interface for reading and updating configuration.
+- Schema validation on both config file loading and CLI-based modification.
+- Precedence for `~/.config` over `%APPDATA%` on Windows only when both are present.
+- Motivation and support for tracking the origin of each configuration value, with use cases such as: debug-level log reporting, enforced setting explanation, and editor pre-fill mes
+  sages.
 
 Layered configuration supports system, user, project, and project-user scopes. Values can also be supplied via environment variables and CLI flags. See [CLI](CLI.md) for flag mappings.
 
@@ -33,6 +32,7 @@ Enterprise deployments may enforce specific keys at the System scope. Enforced v
 Use a single key `ui` (not `ui.default`) to control the default UI.
 
 ### Mapping Rules (Flags ↔ Config ↔ ENV/JSON)
+
 To keep things mechanical and predictable:
 
 - TOML sections correspond to subcommand groups (e.g., `[repo]` for `aw repo ...`).
@@ -140,6 +140,7 @@ type = "container"      # predefined types with their own options
 ```
 
 Flags and mapping:
+
 - `--remote-server <NAME|URL>` selects a server (overrides `remote-server` in config).
 - `--fleet <NAME>` selects a fleet; default is the fleet named `default`.
 - Bare `aw` uses `ui` to decide between TUI and WebUI (defaults to `tui`).
@@ -175,6 +176,7 @@ supported-agents = "all" # or ["codex","claude","cursor"]
 ```
 
 Notes:
+
 - `supportedAgents` accepts "all" or an explicit array of agent names; the CLI may normalize this value internally.
 - `devenv` accepts values like `nix`, `spack`, `bazel`, `none`/`no`, or `custom`.
 

@@ -23,26 +23,26 @@ Enable agents to validate builds and tests across multiple operating systems in 
 - **Followers**: Secondary workspaces on other OSes, receiving file updates via Mutagen.
 - **Sync Fence**: An explicit operation ensuring all follower file trees match the leader FsSnapshot before execution.
 - **run-everywhere**: Project command that runs an action (e.g., build/test) on selected hosts and returns output of the command execution to the agent running on the leader.
- - **Fleet**: The set of one leader and one or more followers participating in a single multi‑OS session.
+- **Fleet**: The set of one leader and one or more followers participating in a single multi‑OS session.
 
 ### Architecture
 
-1) Workspace Topology
+1. Workspace Topology
    - Leader path (e.g., `/workspaces/proj`) is the source of truth.
    - Mutagen sessions map leader→follower working directories with optimized ignores.
    - Followers are prepared using container/VM/native shells; Windows may still use the `S:` drive mapping even when not using the WinFsp overlay (which is not required in a follower configuration).
 
-2) Execution Cycle
+2. Execution Cycle
    - Agent edits files on the leader.
    - Runner executes `fs_snapshot_and_sync`:
      - Create a leader FsSnapshot (native CoW when available; FSKit/WinFsp overlay fallback otherwise).
      - Issue a sync fence: wait until Mutagen confirms followers are in sync with the leader snapshot content.
    - The agent is instructed to invoke `run-everywhere` with appropriate selectors in the agent instructions inserted automatically by agents-workflow.
 
-3) Selectors
+3. Selectors
    - `--host <name>`: run on a single follower by host name.
    - `--tag <tag>`: run on all followers tagged with `<tag>` (e.g., `os=windows`, `gpu=nvidia`).
-   By default, the supplied command is executed on all configured followers (the default).
+     By default, the supplied command is executed on all configured followers (the default).
 
 ### Snapshot Strategy
 
@@ -136,4 +136,3 @@ run-everywhere --host win-12 -- lint
 See `docs/connectivity-layer.md` for overlay options (Tailscale/Headscale, NetBird, ZeroTier, WireGuard, SSH-only), ephemeral peer modes for short‑lived sessions, and operational guidance.
 
 Fallback relay: If overlays are unavailable, the coordinator can act as a relay by subscribing to per-host SSE logs and forwarding messages (pub/sub) between leader and followers. This preserves basic run‑everywhere semantics at higher latency.
-

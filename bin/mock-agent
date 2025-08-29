@@ -18,58 +18,58 @@ options = {
 }
 
 parser = OptionParser.new do |opts|
-  opts.banner = "Usage: #{$0} [options]"
-  opts.separator ""
-  opts.separator "MockAgent simulates realistic AI agent behavior for testing"
-  opts.separator "isolation and concurrency of snapshot-based workspaces."
-  opts.separator ""
+  opts.banner = "Usage: #{$PROGRAM_NAME} [options]"
+  opts.separator ''
+  opts.separator 'MockAgent simulates realistic AI agent behavior for testing'
+  opts.separator 'isolation and concurrency of snapshot-based workspaces.'
+  opts.separator ''
 
-  opts.on("-w", "--workspace PATH", "Workspace directory path (default: /workspace)") do |path|
+  opts.on('-w', '--workspace PATH', 'Workspace directory path (default: /workspace)') do |path|
     options[:workspace] = path
   end
 
-  opts.on("-i", "--agent-id ID", "Agent identifier (default: auto-generated)") do |id|
+  opts.on('-i', '--agent-id ID', 'Agent identifier (default: auto-generated)') do |id|
     options[:agent_id] = id
   end
 
-  opts.on("-c", "--config-file FILE", "JSON configuration file") do |file|
+  opts.on('-c', '--config-file FILE', 'JSON configuration file') do |file|
     options[:config_file] = file
   end
 
-  opts.on("--min-duration SECONDS", Float, "Minimum work duration in seconds") do |duration|
+  opts.on('--min-duration SECONDS', Float, 'Minimum work duration in seconds') do |duration|
     options[:config][:min_work_duration] = duration
   end
 
-  opts.on("--max-duration SECONDS", Float, "Maximum work duration in seconds") do |duration|
+  opts.on('--max-duration SECONDS', Float, 'Maximum work duration in seconds') do |duration|
     options[:config][:max_work_duration] = duration
   end
 
-  opts.on("--read-probability PROB", Float, "Probability of reading files (0.0-1.0)") do |prob|
+  opts.on('--read-probability PROB', Float, 'Probability of reading files (0.0-1.0)') do |prob|
     options[:config][:read_file_probability] = prob
   end
 
-  opts.on("--create-probability PROB", Float, "Probability of creating files (0.0-1.0)") do |prob|
+  opts.on('--create-probability PROB', Float, 'Probability of creating files (0.0-1.0)') do |prob|
     options[:config][:create_file_probability] = prob
   end
 
-  opts.on("--modify-probability PROB", Float, "Probability of modifying files (0.0-1.0)") do |prob|
+  opts.on('--modify-probability PROB', Float, 'Probability of modifying files (0.0-1.0)') do |prob|
     options[:config][:modify_file_probability] = prob
   end
 
-  opts.on("--sleep-between SECONDS", Float, "Sleep time between operations") do |sleep_time|
+  opts.on('--sleep-between SECONDS', Float, 'Sleep time between operations') do |sleep_time|
     options[:config][:sleep_between_ops] = sleep_time
   end
 
-  opts.on("-v", "--verbose", "Enable verbose logging") do
+  opts.on('-v', '--verbose', 'Enable verbose logging') do
     options[:config][:log_level] = Logger::DEBUG
     options[:config][:detailed_logging] = true
   end
 
-  opts.on("-q", "--quiet", "Disable detailed logging") do
+  opts.on('-q', '--quiet', 'Disable detailed logging') do
     options[:config][:detailed_logging] = false
   end
 
-  opts.on_tail("-h", "--help", "Show this help message") do
+  opts.on_tail('-h', '--help', 'Show this help message') do
     puts opts
     exit 0
   end
@@ -88,7 +88,7 @@ if options[:config_file]
   begin
     file_config = JSON.parse(File.read(options[:config_file]), symbolize_names: true)
     options[:config] = file_config.merge(options[:config])
-  rescue => e
+  rescue StandardError => e
     puts "Error reading config file: #{e.message}"
     exit 1
   end
@@ -111,7 +111,7 @@ end
 puts "Starting MockAgent #{options[:agent_id]}"
 puts "Workspace: #{options[:workspace]}"
 puts "Configuration: #{options[:config].inspect}" unless options[:config].empty?
-puts "=" * 60
+puts '=' * 60
 
 begin
   # Create and run the mock agent
@@ -119,7 +119,7 @@ begin
   result = agent.run_work_session
 
   # Output results
-  puts "=" * 60
+  puts '=' * 60
   puts "MockAgent #{result[:agent_id]} completed"
   puts "Success: #{result[:success]}"
   puts "Duration: #{result[:duration].round(2)} seconds"
@@ -133,7 +133,7 @@ begin
     end
 
     # Output final workspace state
-    workspace_files = Dir.glob(File.join(options[:workspace], "**/*")).select { |f| File.file?(f) }
+    workspace_files = Dir.glob(File.join(options[:workspace], '**/*')).select { |f| File.file?(f) }
     generated_files = workspace_files.select { |f| f.include?("generated_#{options[:agent_id]}") }
 
     puts "\nWorkspace State:"
@@ -141,16 +141,15 @@ begin
     puts "  Generated files: #{generated_files.size}"
 
     # Show log file location
-    log_file = File.join(options[:workspace], ".agent_logs", "#{options[:agent_id]}.log")
+    log_file = File.join(options[:workspace], '.agent_logs', "#{options[:agent_id]}.log")
     puts "  Log file: #{log_file}"
 
     exit 0
   else
-    puts "Agent failed - check logs for details"
+    puts 'Agent failed - check logs for details'
     exit 1
   end
-
-rescue => e
+rescue StandardError => e
   puts "Fatal error: #{e.message}"
   puts e.backtrace.join("\n") if ENV['DEBUG']
   exit 1

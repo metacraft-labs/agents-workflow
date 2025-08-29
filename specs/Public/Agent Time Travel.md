@@ -90,16 +90,23 @@ The initial implementation will focus on supporting regular FsSnapshot on copy-o
 - `GET /api/v1/sessions/{id}/timeline`
   - Returns SessionMoments and FsSnapshots ordered by time.
   - Response:
+
   ```json
   {
     "sessionId": "...",
     "durationSec": 1234.5,
-    "recording": {"format": "cast", "uri": "s3://.../cast.json"},
+    "recording": { "format": "cast", "uri": "s3://.../cast.json" },
     "moments": [
-      {"id": "m1", "ts": 12.34, "label": "git clone", "kind": "auto"}
+      { "id": "m1", "ts": 12.34, "label": "git clone", "kind": "auto" }
     ],
     "fsSnapshots": [
-      {"id": "s1", "ts": 12.40, "label": "post-clone", "provider": "btrfs", "snapshot": {"id": "repo@tt-001", "mount": "/.snapshots/..."}}
+      {
+        "id": "s1",
+        "ts": 12.4,
+        "label": "post-clone",
+        "provider": "btrfs",
+        "snapshot": { "id": "repo@tt-001", "mount": "/.snapshots/..." }
+      }
     ]
   }
   ```

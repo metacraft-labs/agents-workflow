@@ -22,6 +22,7 @@ MicroVMs are launched by a userspace Virtual Machine Monitor (VMM) on top of KVM
   - Fly.io “Machines” run in Firecracker microVMs; their docs explicitly state apps run in Firecracker microVMs. See: [Fly.io architecture](https://fly.io/docs/reference/architecture/).
 
 Notes and nuances
+
 - Networking is commonly TAP‑based with NAT on the host (see Firecracker guide). Vsock is often used for host↔guest control channels (Cloud Hypervisor `--vsock …`).
 - Consoles differ: Firecracker typically uses `ttyS0`; Cloud Hypervisor often uses `virtio-console`/`hvc0` (or `--serial tty` + `console=ttyS0`); QEMU microvm can use `ttyS0` or `hvc0` depending on devices.
 
@@ -56,6 +57,7 @@ We can define our software set once and emit multiple formats:
   - MicroVM images: reuse the same NixOS config to produce raw disk images for Cloud Hypervisor/QEMU microvm or a Firecracker‑ready rootfs+kernel. The `microvm.nix` project lets you target Firecracker, Cloud Hypervisor, QEMU microvm, crosvm, and kvmtool from the same Nix flake, and can build read‑only root images (squashfs/erofs) with host `/nix/store` sharing if desired. [microvm.nix intro] [microvm options]
 
 References
+
 - [nixos‑generators (generate raw/qcow2/… images from one config)](https://github.com/nix-community/nixos-generators)
 - [microvm.nix (define and run NixOS‑based MicroVMs across multiple hypervisors)](https://microvm-nix.github.io/microvm.nix/)
 
@@ -68,15 +70,18 @@ Ideally, we would have a shared image generation process allow the same list of 
 Short answer: There are credible public benchmarks, but truly apples‑to‑apples, regularly updated comparisons are rare. The best available sources show that Firecracker and Cloud Hypervisor both achieve sub‑second Linux cold boots under minimal configurations, often hundreds of milliseconds; QEMU’s `microvm` machine type narrows the gap substantially versus “full” QEMU, and unikernels can boot in the single‑digit millisecond range. Snapshot/restore (“microVM resume”) is dramatically faster than cold boot for all VMMs.
 
 Highlights from primary sources and recent reports
+
 - Firecracker (cold boot): The project advertises initiating userspace in “as little as 125 ms.” Independent reports commonly land in the ~150–800 ms range depending on kernel/userspace and device setup (e.g., ~800 ms in a demo repo issue; Alpine Linux ~330 ms in Unikraft’s evaluation). Sources: [Firecracker site](https://firecracker-microvm.github.io/), [AWS blog](https://aws.amazon.com/blogs/aws/firecracker-lightweight-virtualization-for-serverless-computing/), [community issue](https://github.com/firecracker-microvm/firecracker-demo/issues/44), [Unikraft performance](https://unikraft.org/docs/concepts/performance).
 - Cloud Hypervisor (cold boot): Boot‑time tracking shows “VMM start → userspace” around 200 ms in repeated runs on release builds, with kernel entry near ~30 ms. See: [cloud-hypervisor#1728](https://github.com/cloud-hypervisor/cloud-hypervisor/issues/1728).
 - QEMU “microvm” (context): Upstream QEMU documents the minimalist `microvm` machine type (no PCI/ACPI; virtio‑mmio). Unikernel studies report total boot around ~10 ms on QEMU microVM for a hello‑world guest. Links: [QEMU microvm docs](https://www.qemu.org/docs/master/system/i386/microvm.html), [Unikraft performance](https://unikraft.org/docs/concepts/performance).
 - Unikernels (best case): Unikraft reports booting off‑the‑shelf apps in a few milliseconds on Firecracker and QEMU (guest‑only ~µs to 1 ms; total VMM+guest single‑digit ms). Links: [Unikraft performance](https://unikraft.org/docs/concepts/performance), [EuroSys’21 abstract](https://arxiv.org/abs/2104.12721).
 
 What to watch for when comparing numbers
+
 - Definition of “boot”: Some measure “VMM start → kernel entry”, others “VMM start → first userspace process”, others “SSH‑reachable.” Device count (net/blk/console/vsock) and firmware vs direct‑kernel boot materially change results. References: [cloud-hypervisor#1728](https://github.com/cloud-hypervisor/cloud-hypervisor/issues/1728), [QEMU microvm docs](https://www.qemu.org/docs/master/system/i386/microvm.html).
 - Guest OS: BusyBox/Buildroot or stripped NixOS boots much faster than Ubuntu cloud images; unikernels are faster still but not directly comparable to a general‑purpose distro. Reference: [Unikraft performance](https://unikraft.org/docs/concepts/performance).
 - Snapshots vs cold boot: Resume from a snapshot is dramatically faster. Example: Fly.io Machines suspend/resume uses Firecracker snapshots to resume in “hundreds of milliseconds” vs multi‑second cold starts; Firecracker snapshot docs cover performance considerations and caveats. Links: [Fly.io suspend/resume](https://fly.io/docs/reference/suspend-resume/), [Firecracker snapshot support](https://github.com/firecracker-microvm/firecracker/blob/main/docs/snapshotting/snapshot-support.md).
 
 Bottom line
+
 - For minimal Linux guests, both Firecracker and Cloud Hypervisor can achieve sub‑second cold boots on modern hardware; precise numbers depend heavily on kernel config, devices, and what “boot complete” means. QEMU’s `microvm` narrows the gap substantially versus traditional QEMU, and unikernels demonstrate the lower bound. For production “time‑to‑first‑request,” snapshot/restore often matters more than raw cold‑boot speed.

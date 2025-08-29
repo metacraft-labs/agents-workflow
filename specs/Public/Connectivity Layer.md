@@ -5,6 +5,7 @@
 Provide reliable, low‑friction connectivity for run‑everywhere and Mutagen between the leader and follower hosts across Linux, macOS, and Windows.
 
 Key properties:
+
 - One overlay per host/VM, not per task. All agent sessions reuse the same connectivity.
 - Prefer SSH as the execution transport; Mutagen spawns its agent over SSH.
 
@@ -45,11 +46,24 @@ Key properties:
 
 - Host Catalog
   - Store overlay addresses and metadata in `.agents/hosts.json` (or via REST):
+
   ```json
   {
     "hosts": [
-      { "name": "win-01", "os": "windows", "address": "win-01.tailnet.example", "tags": ["os=windows"], "sshUser": "builder" },
-      { "name": "mac-01", "os": "macos",   "address": "100.101.102.103",       "tags": ["os=macos"],   "sshUser": "builder" }
+      {
+        "name": "win-01",
+        "os": "windows",
+        "address": "win-01.tailnet.example",
+        "tags": ["os=windows"],
+        "sshUser": "builder"
+      },
+      {
+        "name": "mac-01",
+        "os": "macos",
+        "address": "100.101.102.103",
+        "tags": ["os=macos"],
+        "sshUser": "builder"
+      }
     ]
   }
   ```
@@ -66,12 +80,13 @@ Key properties:
 
 Workflow:
 
-1) Coordinator requests an ephemeral Setup Key from the Agents‑Workflow REST service (see REST section below).
-2) Followers run `netbird up --setup-key <KEY>`.
-3) Access is scoped via `auto_groups` and policies (only session peers can talk to each other and the leader).
-4) Teardown: stop the agent; peers auto‑purge after ~10 minutes of inactivity, or the coordinator calls `DELETE /api/peers/{id}` via NetBird API for immediate removal.
+1. Coordinator requests an ephemeral Setup Key from the Agents‑Workflow REST service (see REST section below).
+2. Followers run `netbird up --setup-key <KEY>`.
+3. Access is scoped via `auto_groups` and policies (only session peers can talk to each other and the leader).
+4. Teardown: stop the agent; peers auto‑purge after ~10 minutes of inactivity, or the coordinator calls `DELETE /api/peers/{id}` via NetBird API for immediate removal.
 
 Notes:
+
 - Keys may be reusable to simplify parallel follower startup; groups isolate session scope.
 - Ephemeral peers should not be referenced by fixed IPs; use names/groups.
 
@@ -84,6 +99,7 @@ When the server or client reports overlays are unavailable, the coordinator can 
 - Scope: run‑everywhere control messages, stdout/stderr, exit codes, and minimal Mutagen control signals (not bulk sync).
 
 Relay behavior:
+
 - Followers subscribe to `/relay/{sessionId}/{host}/control` and `/relay/{sessionId}/{host}/stdin`.
 - Followers POST logs to `/relay/{sessionId}/{host}/stdout` and `/relay/{sessionId}/{host}/stderr`, and status to `/relay/{sessionId}/{host}/status`.
 - Leader/client multiplexes commands to followers and aggregates outputs.
@@ -93,12 +109,13 @@ Relay behavior:
 Goal: Confirm follower connectivity (overlay or relay) before first run‑everywhere, with a short timeout.
 
 Sequence (overlay path):
-1) Client → REST: `POST /connect/keys` (request ephemeral keys for preferred provider in priority order: netbird → tailscale).
-2) Server → Client: returns available provider and session‑scoped credentials (e.g., NetBird setup key or Tailscale ephemeral auth key) plus ACL/group tags.
-3) Client: distributes credentials to follower instances; followers join overlay.
-4) Client → REST: `POST /connect/handshake` with the list of expected followers.
-5) Followers → REST: `POST /connect/handshake/ack` upon successful join (overlay reachability + SSH check).
-6) Server → Client: `200 OK` when all acks received or timeout reached; includes per‑host status.
+
+1. Client → REST: `POST /connect/keys` (request ephemeral keys for preferred provider in priority order: netbird → tailscale).
+2. Server → Client: returns available provider and session‑scoped credentials (e.g., NetBird setup key or Tailscale ephemeral auth key) plus ACL/group tags.
+3. Client: distributes credentials to follower instances; followers join overlay.
+4. Client → REST: `POST /connect/handshake` with the list of expected followers.
+5. Followers → REST: `POST /connect/handshake/ack` upon successful join (overlay reachability + SSH check).
+6. Server → Client: `200 OK` when all acks received or timeout reached; includes per‑host status.
 
 Fallback (relay path): Same handshake but without overlay checks; followers instead establish SSE subscriptions; acks include relay stream readiness.
 
@@ -164,11 +181,13 @@ Approach B (server‑hosted): A REST‑hosted, per‑session SOCKS5 rendezvous t
 
 - **Client configuration**
   - SSH config on leader (example):
+
   ```
   Host follower-01
     HostName follower-01
     ProxyCommand nc -X 5 -x socks.rest.example:1080 %h %p
   ```
+
   - Mutagen: configure SSH to use the same `ProxyCommand`.
 
 Mermaid sequence (server‑hosted SOCKS5 rendezvous):
@@ -198,6 +217,3 @@ Note: In both approaches, HTTP CONNECT is not assumed available and public IPs a
 ### Userspace VPN SOCKS fallback (when TUN fails)
 
 If the Coordinator has provided ephemeral overlay credentials (NetBird/Tailscale), but VMs fail to create TUN interfaces, each VM launches a userspace VPN daemon that exposes a local SOCKS5 proxy. All VM processes (SSH, Mutagen, etc.) use this local SOCKS as above, and traffic is relayed either by the aw client (ad‑hoc fleets) or by the REST server (server‑hosted rendezvous).
-
-
-

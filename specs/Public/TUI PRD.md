@@ -64,4 +64,3 @@ The main TUI dashboard focuses on quick launch:
 ### Accessibility
 
 - High-contrast theme option; full keyboard operation; predictable focus order.
-

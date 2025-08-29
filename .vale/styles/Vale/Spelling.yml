@@ -1,0 +1,35 @@
+extends: spelling
+message: "Did you really mean '%s'?"
+level: warning
+ignore:
+  - Blocksense
+  - sandboxed
+  - Sandboxing
+  - GUIs
+  - namespaces
+  - cgroups
+  - enablement
+  - exfiltrate
+  - distro
+  - Overlayfs
+  - hostname
+  - devpts
+  - ptys
+  - overlayfs
+  - ns
+  - upperdirs
+  - securebits
+  - dirs
+  - syscalls
+  - syscall
+  - tracee
+  - ptrace
+  - netns
+  - slirp
+  - nftables
+  - Cgroups
+  - subtree
+  - chowning
+  - pid
+  - Ptrace
+  - Podman

@@ -31,19 +31,19 @@ This document describes requirements, rationale, and implementation details. Nix
 
 ### Layered Images
 
-1) Nix Devcontainer Base (see `docs/nix-devcontainer/`)
+1. Nix Devcontainer Base (see `docs/nix-devcontainer/`)
    - Installs Nix (flakes enabled), configures substituters/cachix.
    - Declares persistent volumes for `/nix`, Nix DB, and general caches.
    - Provides optional shared cache mounts for common package managers (npm/pnpm/yarn, pip/pipx, cargo, go, maven/gradle, etc.).
    - Exposes a thin entrypoint that sources project devshell when present.
 
-2) Agents Base Image
+2. Agents Base Image
    - FROM: Nix Devcontainer Base.
    - Installs all supported agentic CLIs using Nix. The list of agents is shared with the agents-workflow Nix package, defined at the root of this repository, ensuring consistency between the devcontainer and the Nix package set.
    - Configures shell integration (zsh/bash/fish) to emit timeline SessionMoments via preexec/DEBUG traps and trigger FsSnapshots.
    - Prepares netrc/SSH/gh credential bridges (runtime only; nothing baked into the image).
 
-3) Project Image
+3. Project Image
    - FROM: Agents Base Image.
    - Adds project `flake.nix`/`devshell` and any extra tools.
    - Optionally extends cache mounts for project‑specific package managers.
@@ -137,5 +137,3 @@ Each agent’s exact mapping is captured in `docs/agents/<tool>.md` and validate
 - Exact per‑agent credential files and minimal scopes (document in `docs/agents/`).
 - Which package manager caches to enable by default vs opt‑in.
 - Windows credential manager integrations (e.g., Git Credential Manager) via bind vs env.
-
-

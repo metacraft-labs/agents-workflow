@@ -56,7 +56,7 @@
   "title": "Invalid request",
   "status": 400,
   "detail": "repo.url must be provided when repo.mode=git",
-  "errors": {"repo.url": ["is required"]}
+  "errors": { "repo.url": ["is required"] }
 }
 ```
 
@@ -95,7 +95,7 @@ Request:
   "runtime": {
     "type": "devcontainer",
     "devcontainerPath": ".devcontainer/devcontainer.json",
-    "resources": {"cpu": 4, "memoryMiB": 8192}
+    "resources": { "cpu": 4, "memoryMiB": 8192 }
   },
   "workspace": {
     "snapshotPreference": ["zfs", "btrfs", "overlay", "copy"],
@@ -104,14 +104,16 @@ Request:
   "agent": {
     "type": "claude-code",
     "version": "latest",
-    "settings": {"maxTokens": 8000}
+    "settings": { "maxTokens": 8000 }
   },
   "delivery": {
     "mode": "pr",
     "targetBranch": "main"
   },
-  "labels": {"priority": "p2"},
-  "webhooks": [{"event": "session.completed", "url": "https://hooks.acme.dev/agents"}]
+  "labels": { "priority": "p2" },
+  "webhooks": [
+    { "event": "session.completed", "url": "https://hooks.acme.dev/agents" }
+  ]
 }
 ```
 
@@ -162,7 +164,12 @@ Response `200 OK` includes array of sessions and pagination metadata.
 Event payload (SSE `data:` line):
 
 ```json
-{"type":"log","level":"info","message":"Running tests...","ts":"2025-01-01T12:00:00Z"}
+{
+  "type": "log",
+  "level": "info",
+  "message": "Running tests...",
+  "ts": "2025-01-01T12:00:00Z"
+}
 ```
 
 #### Workspace and IDE/TUI Launch Helpers
@@ -184,6 +191,7 @@ Response example:
 ```
 
 #### Capability Discovery
+
 #### Followers and Multi‑OS Execution
 
 - `GET /api/v1/followers` → List follower hosts with metadata (os, tags, status).
@@ -224,7 +232,6 @@ Response example:
 - SOCKS name resolution: leader’s SSH connects to `follower-01:22`; server forwards over WS to peer’s target (e.g., `127.0.0.1:22`).
 
 Client‑hosted rendezvous: The `aw` client may alternatively host a session‑scoped SOCKS5 front‑end and a WS hub, using the same register protocol. In this mode, peers connect their WS to the client, and SSH/Mutagen use the client’s local SOCKS5.
-
 
 - `GET /api/v1/agents` → supported agent types and configurable options.
 - `GET /api/v1/runtimes` → available runtime images/devcontainers.
@@ -295,5 +302,3 @@ curl -X POST "$BASE/api/v1/tasks" \
     "agent": {"type": "openhands"}
   }'
 ```
-
-

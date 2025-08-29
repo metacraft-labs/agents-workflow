@@ -33,7 +33,7 @@ Override (highest precedence): `AGENT_BROWSER_PROFILES_DIR`
   <profile-name>/
     metadata.json        # Required metadata (schema v1)
     browsers/            # Playwright persistent context userDataDir
-      chromium/          
+      chromium/
       firefox/
       safari/
       webkit/
@@ -41,6 +41,7 @@ Override (highest precedence): `AGENT_BROWSER_PROFILES_DIR`
 ```
 
 Notes:
+
 - Only `metadata.json` is required by this spec. Subdirectories under `browsers/` are optional and created on demand.
 - Data in these directories may contain secrets (cookies, tokens). Store them in user scope; do not commit to VCS.
 
@@ -66,6 +67,7 @@ Format: JSON, UTF‑8. Unknown fields must be ignored for forward compatibility.
 ```
 
 Field definitions:
+
 - `schemaVersion` (number): Always `1` for this spec.
 - `profileName` (string): Redundant safety for human inspection. Not authoritative for path resolution.
 - `description` (string, optional).
@@ -74,7 +76,7 @@ Field definitions:
 - `loginExpectations` (array): Zero or more per‑site discovery hints. Each entry:
   - `origins` (array<string>): Allowed origins for the site (schemes required).
   - `username` (string): Account identifier expected to be logged in (email, handle, or user ID).
-  Applications MAY include additional, application‑specific keys inside `loginExpectations` entries to support their own check mechanisms; such keys are not standardized by this spec.
+    Applications MAY include additional, application‑specific keys inside `loginExpectations` entries to support their own check mechanisms; such keys are not standardized by this spec.
 
 ### Environment Variables
 
@@ -85,5 +87,3 @@ Field definitions:
 
 - Profile contents may include cookies and tokens protected by OS keychains. Profiles generally do not port across different machines/OSes. Treat them as per‑user, per‑machine.
 - Never commit profile directories to source control.
-
-

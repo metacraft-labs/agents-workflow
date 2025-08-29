@@ -12,23 +12,23 @@ Validate cache persistence and correctness for supported package managers and to
 
 ### Scenarios
 
-1) Cold → Warm Install
+1. Cold → Warm Install
    - Cold: clear volumes; install dependencies; record time/size.
    - Warm: rebuild container; reinstall; expect significant speedup and no network fetches where offline cache applies.
 
-2) Lockfile Change Invalidation
+2. Lockfile Change Invalidation
    - Modify lockfile (add dependency); ensure caches do not cause stale results; verify correct new graph.
 
-3) Toolchain Change
+3. Toolchain Change
    - Change Nix devshell tool versions; validate caches with different ABI get invalidated as needed.
 
-4) Concurrent Builds
+4. Concurrent Builds
    - Run two builds concurrently in separate containers sharing volumes; ensure no corruption.
 
-5) Security Hygiene
+5. Security Hygiene
    - Verify no secrets present in cache volumes; permissions are scoped to devcontainer user.
 
-6) Offline Build
+6. Offline Build
    - Disable network; confirm warm caches enable successful builds where expected (cargo/go/java).
 
 ### Measurements
@@ -42,5 +42,3 @@ Validate cache persistence and correctness for supported package managers and to
 
 - Provide `aw doctor --caches` to print configured mounts and sizes.
 - CI jobs per package manager with synthetic sample projects.
-
-

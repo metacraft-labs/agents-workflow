@@ -19,11 +19,11 @@ EXTRAS="nix;direnv+cachix" bash common-pre-setup
 
 ## Available Components
 
-| Component | Description | Dependencies |
-|-----------|-------------|--------------|
-| `nix` | Nix package manager (foundational) | None |
-| `direnv` | Directory-based environment management | nix |
-| `cachix` | Binary cache service for Nix | nix |
+| Component | Description                            | Dependencies |
+| --------- | -------------------------------------- | ------------ |
+| `nix`     | Nix package manager (foundational)     | None         |
+| `direnv`  | Directory-based environment management | nix          |
+| `cachix`  | Binary cache service for Nix           | nix          |
 
 ## Features
 
@@ -36,6 +36,7 @@ EXTRAS="nix;direnv+cachix" bash common-pre-setup
 ## Advanced Usage
 
 ### Using Rake tasks for dependency management
+
 ```bash
 # Install specific components with proper dependency resolution
 rake -f Rakefile.extras nix direnv

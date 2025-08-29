@@ -4,16 +4,19 @@ Goal: validate Playwright-driven automation that navigates `https://chatgpt.com/
 
 ### Levels of Testing
 
-1) Unit-like checks (fast):
+1. Unit-like checks (fast):
+
 - Validate profile path resolution across platforms given environment overrides.
 - Validate parsing and semantics of `meta.json` (visibility policy, login expectations, TTL/grace).
 - Validate selector maps/config fallbacks without launching a browser.
 
-2) Playwright integration tests (headless/headful):
+2. Playwright integration tests (headless/headful):
+
 - Use persistent contexts tied to ephemeral copies of real profiles (or synthetic profiles) to avoid mutating a user’s primary profiles.
 - Mock or guard network calls as needed, but prefer real navigation to detect UI drift.
 
-3) OS‑level visibility assertions:
+3. OS‑level visibility assertions:
+
 - Verify that the browser starts hidden (headless) when login is known good.
 - Verify that the browser is displayed (headful) only when login is unknown/expired/failing or when UI drift is detected.
 
@@ -36,6 +39,7 @@ These helpers should be wrapped with feature detection and skipped when the envi
 ### Login Expectation Scenarios
 
 Test cases should cover:
+
 - Known good login: `lastValidated` fresh and check passes → remain headless.
 - Stale login: `lastValidated` older than `graceSeconds` → perform probe; if probe fails, switch to headful and wait for user.
 - No expectations configured: proceed headless by default; do not block.
@@ -44,10 +48,12 @@ Test cases should cover:
 ### UI Drift and Resilience
 
 Detection:
+
 - Missing critical selectors (workspace picker, branch selector, "Code" button) must fail fast with a machine‑readable error.
 - Automation should then show the browser (headful), optionally open DevTools, and present an inline banner/toast explaining what failed and how to proceed.
 
 Tests:
+
 - Simulate selector renames by injecting CSS/JS to remove/alter test ids via Playwright route interception or a local test proxy. Assert that:
   - The automation raises a drift error quickly.
   - The browser is brought to foreground (headful).
@@ -81,5 +87,3 @@ Tests:
 
 - `--update-selectors` test mode to record new stable selectors when UI drift is acknowledged by a developer.
 - `--show-browser` override to force headful during local debugging.
-
-

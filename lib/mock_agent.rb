@@ -71,7 +71,7 @@ class MockAgent
 
   def initialize(workspace_path, agent_id = nil, config = {})
     @workspace_path = File.expand_path(workspace_path)
-    @agent_id = agent_id || "agent_#{Random.rand(10000)}"
+    @agent_id = agent_id || "agent_#{Random.rand(10_000)}"
     @config = DEFAULT_CONFIG.merge(config)
     @activity_log = []
 
@@ -82,12 +82,12 @@ class MockAgent
   # Main entry point - simulates a complete agent work session
   def run_work_session
     start_time = Time.now
-    log_activity("AGENT_START", "Starting work session in #{@workspace_path}")
+    log_activity('AGENT_START', "Starting work session in #{@workspace_path}")
 
     begin
       # Determine work duration
       work_duration = random_duration
-      log_activity("PLAN", "Planning to work for #{work_duration.round(2)} seconds")
+      log_activity('PLAN', "Planning to work for #{work_duration.round(2)} seconds")
 
       # Perform the work phases
       analyze_workspace
@@ -95,15 +95,15 @@ class MockAgent
       generate_summary_report
 
       success = true
-    rescue => e
-      log_activity("ERROR", "Work session failed: #{e.message}")
+    rescue StandardError => e
+      log_activity('ERROR', "Work session failed: #{e.message}")
       @logger.error("Agent #{@agent_id} failed: #{e.message}")
       @logger.error(e.backtrace.join("\n"))
       success = false
     ensure
       end_time = Time.now
       duration = end_time - start_time
-      log_activity("AGENT_END", "Work session completed in #{duration.round(2)} seconds")
+      log_activity('AGENT_END', "Work session completed in #{duration.round(2)} seconds")
     end
 
     # Return summary of work done
@@ -125,12 +125,12 @@ class MockAgent
   private
 
   def setup_logger
-    log_file = File.join(@workspace_path, ".agent_logs", "#{@agent_id}.log")
+    log_file = File.join(@workspace_path, '.agent_logs', "#{@agent_id}.log")
     FileUtils.mkdir_p(File.dirname(log_file))
 
     @logger = Logger.new(log_file)
     @logger.level = @config[:log_level]
-    @logger.formatter = proc do |severity, datetime, progname, msg|
+    @logger.formatter = proc do |severity, datetime, _progname, msg|
       "[#{datetime.strftime('%Y-%m-%d %H:%M:%S')}] #{severity} [#{@agent_id}] #{msg}\n"
     end
 
@@ -140,15 +140,13 @@ class MockAgent
   end
 
   def validate_workspace
-    unless Dir.exist?(@workspace_path)
-      raise ArgumentError, "Workspace path does not exist: #{@workspace_path}"
-    end
+    raise ArgumentError, "Workspace path does not exist: #{@workspace_path}" unless Dir.exist?(@workspace_path)
 
     # Try to create a test file to ensure workspace is writable
     test_file = File.join(@workspace_path, ".agent_test_#{@agent_id}")
-    File.write(test_file, "test")
+    File.write(test_file, 'test')
     File.delete(test_file)
-  rescue => e
+  rescue StandardError => e
     raise ArgumentError, "Workspace is not writable: #{e.message}"
   end
 
@@ -167,15 +165,15 @@ class MockAgent
   def random_duration
     min = @config[:min_work_duration]
     max = @config[:max_work_duration]
-    min + (max - min) * Random.rand
+    min + ((max - min) * Random.rand)
   end
 
   def analyze_workspace
-    log_activity("ANALYZE_START", "Beginning workspace analysis")
+    log_activity('ANALYZE_START', 'Beginning workspace analysis')
 
     # Find source files to analyze
     source_files = find_source_files
-    log_activity("DISCOVER_FILES", "Found #{source_files.size} source files")
+    log_activity('DISCOVER_FILES', "Found #{source_files.size} source files")
 
     # Simulate reading and analyzing files
     files_to_read = source_files.sample(random_count(:read))
@@ -184,14 +182,14 @@ class MockAgent
       sleep(@config[:sleep_between_ops])
     end
 
-    log_activity("ANALYZE_END", "Analyzed #{files_to_read.size} files")
+    log_activity('ANALYZE_END', "Analyzed #{files_to_read.size} files")
   end
 
   def perform_file_operations(target_duration)
     start_time = Time.now
     operations_performed = 0
 
-    log_activity("OPERATIONS_START", "Beginning file operations phase")
+    log_activity('OPERATIONS_START', 'Beginning file operations phase')
 
     while (Time.now - start_time) < target_duration
       operation = choose_operation
@@ -204,7 +202,7 @@ class MockAgent
       break if Random.rand < 0.1 && (Time.now - start_time) > target_duration * 0.5
     end
 
-    log_activity("OPERATIONS_END", "Performed #{operations_performed} operations")
+    log_activity('OPERATIONS_END', "Performed #{operations_performed} operations")
   end
 
   def find_source_files
@@ -212,7 +210,7 @@ class MockAgent
     files = []
 
     extensions.each do |ext|
-      files.concat(Dir.glob(File.join(@workspace_path, "**", ext)))
+      files.concat(Dir.glob(File.join(@workspace_path, '**', ext)))
     end
 
     # Filter out generated files and logs
@@ -221,24 +219,21 @@ class MockAgent
   end
 
   def read_and_analyze_file(file_path)
-    begin
-      content = File.read(file_path)
-      relative_path = file_path.sub(@workspace_path + '/', '')
+    content = File.read(file_path)
+    relative_path = file_path.sub("#{@workspace_path}/", '')
 
-      # Simulate analysis
-      line_count = content.lines.size
-      char_count = content.size
-      hash = Digest::MD5.hexdigest(content)[0..7]
+    # Simulate analysis
+    line_count = content.lines.size
+    char_count = content.size
+    hash = Digest::MD5.hexdigest(content)[0..7]
 
-      log_activity("READ_FILE", "#{relative_path} (#{line_count} lines, #{char_count} chars, hash: #{hash})")
+    log_activity('READ_FILE', "#{relative_path} (#{line_count} lines, #{char_count} chars, hash: #{hash})")
 
-      # Simulate AI processing time based on file size
-      processing_time = [0.1, content.size / 10000.0].min
-      sleep(processing_time)
-
-    rescue => e
-      log_activity("READ_ERROR", "Failed to read #{file_path}: #{e.message}")
-    end
+    # Simulate AI processing time based on file size
+    processing_time = [0.1, content.size / 10_000.0].min
+    sleep(processing_time)
+  rescue StandardError => e
+    log_activity('READ_ERROR', "Failed to read #{file_path}: #{e.message}")
   end
 
   def choose_operation
@@ -271,9 +266,9 @@ class MockAgent
 
     begin
       File.write(file_path, content)
-      log_activity("CREATE_FILE", "Created #{filename} (#{content.lines.size} lines)")
-    rescue => e
-      log_activity("CREATE_ERROR", "Failed to create #{filename}: #{e.message}")
+      log_activity('CREATE_FILE', "Created #{filename} (#{content.lines.size} lines)")
+    rescue StandardError => e
+      log_activity('CREATE_ERROR', "Failed to create #{filename}: #{e.message}")
     end
   end
 
@@ -282,7 +277,7 @@ class MockAgent
     return if source_files.empty?
 
     file_path = source_files.sample
-    relative_path = file_path.sub(@workspace_path + '/', '')
+    relative_path = file_path.sub("#{@workspace_path}/", '')
 
     begin
       content = File.read(file_path)
@@ -295,9 +290,9 @@ class MockAgent
       File.write(file_path, modified_content)
       new_lines = modified_content.lines.size
 
-      log_activity("MODIFY_FILE", "Modified #{relative_path} (#{original_lines} -> #{new_lines} lines)")
-    rescue => e
-      log_activity("MODIFY_ERROR", "Failed to modify #{relative_path}: #{e.message}")
+      log_activity('MODIFY_FILE', "Modified #{relative_path} (#{original_lines} -> #{new_lines} lines)")
+    rescue StandardError => e
+      log_activity('MODIFY_ERROR', "Failed to modify #{relative_path}: #{e.message}")
     end
   end
 
@@ -381,27 +376,27 @@ class MockAgent
 
   def generate_json_content
     SimpleJSON.generate({
-      generator: "MockAgent",
-      agent_id: @agent_id,
-      created_at: Time.now.iso8601,
-      data: {
-        items: (1..Random.rand(10) + 1).map do |i|
-          { id: i, name: "Item #{i}", value: Random.rand(100) }
-        end
-      }
-    })
+                          generator: 'MockAgent',
+                          agent_id: @agent_id,
+                          created_at: Time.now.iso8601,
+                          data: {
+                            items: (1..Random.rand(1..10)).map do |i|
+                              { id: i, name: "Item #{i}", value: Random.rand(100) }
+                            end
+                          }
+                        })
   end
 
   def generate_yaml_content
-    "# Generated by MockAgent #{@agent_id}\n" +
-    "metadata:\n" +
-    "  agent_id: #{@agent_id}\n" +
-    "  created_at: #{Time.now.iso8601}\n" +
-    "config:\n" +
-    "  setting1: value1\n" +
-    "  setting2: value2\n" +
-    "  items:\n" +
-    (1..5).map { |i| "    - name: Item #{i}\n      value: #{Random.rand(100)}" }.join("\n")
+    "# Generated by MockAgent #{@agent_id}\n" \
+    "metadata:\n  " \
+    "agent_id: #{@agent_id}\n  " \
+    "created_at: #{Time.now.iso8601}\n" \
+    "config:\n  " \
+    "setting1: value1\n  " \
+    "setting2: value2\n  " \
+    "items:\n" +
+      (1..5).map { |i| "    - name: Item #{i}\n      value: #{Random.rand(100)}" }.join("\n")
   end
 
   def generate_generic_content(lines)
@@ -416,7 +411,7 @@ class MockAgent
   end
 
   def generate_summary_report
-    log_file = File.join(@workspace_path, ".agent_logs", "#{@agent_id}_summary.json")
+    log_file = File.join(@workspace_path, '.agent_logs', "#{@agent_id}_summary.json")
 
     summary = {
       agent_id: @agent_id,
@@ -429,12 +424,12 @@ class MockAgent
     }
 
     File.write(log_file, SimpleJSON.pretty_generate(summary))
-    log_activity("SUMMARY_REPORT", "Generated summary report at #{File.basename(log_file)}")
+    log_activity('SUMMARY_REPORT', "Generated summary report at #{File.basename(log_file)}")
   end
 
   def random_count(type)
-    min_key = "min_files_to_#{type}".to_sym
-    max_key = "max_files_to_#{type}".to_sym
+    min_key = :"min_files_to_#{type}"
+    max_key = :"max_files_to_#{type}"
     min = @config[min_key] || 1
     max = @config[max_key] || 3
     Random.rand(max - min + 1) + min

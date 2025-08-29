@@ -54,4 +54,3 @@
 
 - Expose cache directories and sizes via `aw doctor`.
 - Emit basic metrics (hits/misses) where tools provide them (cargo, sccache).
-

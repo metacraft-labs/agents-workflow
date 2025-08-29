@@ -19,12 +19,103 @@
       preCommit = git-hooks.lib.${system}.run {
         src = ./.;
         hooks = {
+          # Markdown formatting (run first)
+          prettier-md = {
+            enable = true;
+            name = "prettier --write (Markdown)";
+            entry = "prettier --loglevel warn --write";
+            language = "system";
+            pass_filenames = true;
+            files = "\\.md$";
+          };
+          # Fast auto-fixers and sanity checks
+          # Local replacements for common sanity checks (portable, no Python deps)
+          check-merge-conflict = {
+            enable = true;
+            name = "check merge conflict markers";
+            entry = ''
+              bash -lc 'set -e; rc=0; for f in "$@"; do [ -f "$f" ] || continue; if rg -n "^(<<<<<<<|=======|>>>>>>>)" --color never --hidden --glob "!*.rej" --no-ignore-vcs -- "$f" >/dev/null; then echo "Merge conflict markers in $f"; rc=1; fi; done; exit $rc' --
+            '';
+            language = "system";
+            pass_filenames = true;
+            types = [ "text" ];
+          };
+          check-added-large-files = {
+            enable = true;
+            name = "check added large files (>1MB)";
+            entry = ''
+              bash -lc 'set -e; limit="$LIMIT"; [ -z "$limit" ] && limit=1048576; rc=0; for f in "$@"; do [ -f "$f" ] || continue; sz=$(stat -c %s "$f" 2>/dev/null || stat -f %z "$f"); if [ "$sz" -gt "$limit" ]; then echo "File too large: $f ($sz bytes)"; rc=1; fi; done; exit $rc' --
+            '';
+            language = "system";
+            pass_filenames = true;
+          };
+
+          # Markdown: fix then lint
+          markdownlint-fix = {
+            enable = true;
+            name = "markdownlint-cli2 (fix)";
+            entry = "markdownlint-cli2 --fix";
+            language = "system";
+            pass_filenames = true;
+            files = "\\.md$";
+          };
+
           lint-specs = {
             enable = true;
             name = "Lint Markdown specs";
             entry = "just lint-specs";
             language = "system";
             pass_filenames = false;
+          };
+
+          # Spelling
+          cspell = {
+            enable = true;
+            name = "cspell (cached)";
+            entry = "cspell --no-progress --cache --config .cspell.json --exclude .obsidian/**";
+            language = "system";
+            pass_filenames = true;
+            files = "\\.(md|rb|rake|ya?ml|toml|json)$";
+          };
+
+          # Ruby formatting/linting (safe auto-correct)
+          rubocop-autocorrect = {
+            enable = true;
+            name = "rubocop --safe-auto-correct";
+            entry = "rubocop -A --force-exclusion";
+            language = "system";
+            pass_filenames = true;
+            files = "\\.(rb|rake)$";
+          };
+
+          # Shell formatting
+          shfmt = {
+            enable = true;
+            name = "shfmt";
+            entry = "shfmt -w";
+            language = "system";
+            pass_filenames = true;
+            files = "\\.(sh|bash)$";
+          };
+
+          # TOML formatting
+          taplo-fmt = {
+            enable = true;
+            name = "taplo fmt";
+            entry = "taplo fmt";
+            language = "system";
+            pass_filenames = true;
+            files = "\\.toml$";
+          };
+
+          # Fast link check on changed files (CI will run full scan)
+          lychee-fast = {
+            enable = true;
+            name = "lychee (changed files)";
+            entry = "lychee --no-progress --require-https --cache";
+            language = "system";
+            pass_filenames = true;
+            files = "\\.md$";
           };
         };
       };
@@ -99,6 +190,9 @@
           pkgs.lychee
           pkgs.vale
           (pkgs.nodePackages.cspell)
+          (pkgs.nodePackages.prettier)
+          pkgs.shfmt
+          pkgs.taplo
 
           # AI Coding Assistants (latest versions from nixpkgs-unstable)
           pkgs.goose-cli # Goose AI coding assistant

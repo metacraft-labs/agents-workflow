@@ -27,11 +27,11 @@ The WebUI provides a browser-based experience for creating, monitoring, and mana
 
 ### Key Use Cases
 
-1) Create a new task with repo, runtime, and agent settings.
-2) Watch live logs and events, inspect workspace details.
-3) Stop/pause/resume a running session.
-4) Launch IDE connected to the workspace.
-5) Browse history, filter by status/agent/project, and inspect outcomes (PR/branch/patch).
+1. Create a new task with repo, runtime, and agent settings.
+2. Watch live logs and events, inspect workspace details.
+3. Stop/pause/resume a running session.
+4. Launch IDE connected to the workspace.
+5. Browse history, filter by status/agent/project, and inspect outcomes (PR/branch/patch).
 
 ### IA and Navigation
 
@@ -80,9 +80,9 @@ The WebUI provides a browser-based experience for creating, monitoring, and mana
 - Trigger: Clicking the + button next to a repository in the left pane inserts a new task card at the top of the center feed.
 - Description input: Vertically resizable textarea with placeholder guidance; supports markdown; auto-saves to a draft immediately on change.
 - Branch selector: Combo-box prepopulated with the repo’s default branch for task creation (e.g., `main`). Allows switching to any available branch; includes search.
- - Branch selector: Combo-box prepopulated with the repo’s default branch for task creation (e.g., `main`). Allows switching to any available branch; includes search and live autocomplete.
-   - Local mode: Suggestions are sourced directly from the filesystem repo using standard git commands (e.g., `git for-each-ref`), cached in-memory per repo with debounce refresh.
-   - Server mode: Suggestions come from the REST service’s in-memory branch cache populated via the standard git protocol (e.g., `git ls-remote`/refs fetch) against the admin-configured repository URL; the UI queries `/api/v1/repos/{id}/branches?query=<prefix>&limit=<n>`.
+- Branch selector: Combo-box prepopulated with the repo’s default branch for task creation (e.g., `main`). Allows switching to any available branch; includes search and live autocomplete.
+  - Local mode: Suggestions are sourced directly from the filesystem repo using standard git commands (e.g., `git for-each-ref`), cached in-memory per repo with debounce refresh.
+  - Server mode: Suggestions come from the REST service’s in-memory branch cache populated via the standard git protocol (e.g., `git ls-remote`/refs fetch) against the admin-configured repository URL; the UI queries `/api/v1/repos/{id}/branches?query=<prefix>&limit=<n>`.
 - Agent selector: Dropdown to choose agent type/version; prefilled from last used defaults or repo policy; validation against `/api/v1/agents` capabilities.
 - Concurrency: Numeric selector (where supported) for number of concurrent instances; disabled if agent does not support concurrency; show limits.
 - Actions:

@@ -40,29 +40,29 @@ validate_file() {
   local block_no=0
   local line_no=0
   while IFS= read -r line; do
-    line_no=$((line_no+1))
+    line_no=$((line_no + 1))
     case "$line" in
-      '```mermaid'*)
-        if [[ $in_block -eq 0 ]]; then
-          in_block=1
-          block_no=$((block_no+1))
-          : >"$tmpdir/block_${block_no}.mmd"
-          continue
+    '```mermaid'*)
+      if [[ $in_block -eq 0 ]]; then
+        in_block=1
+        block_no=$((block_no + 1))
+        : >"$tmpdir/block_${block_no}.mmd"
+        continue
+      fi
+      ;;
+    '```'*)
+      if [[ $in_block -eq 1 ]]; then
+        in_block=0
+        # validate the block by attempting render
+        local in_file="$tmpdir/block_${block_no}.mmd"
+        local out_file="$tmpdir/block_${block_no}.svg"
+        if ! $MMDC_CMD -i "$in_file" -o "$out_file" --quiet >/dev/null 2>&1; then
+          echo "Mermaid error: $file: block $block_no (see $in_file)" >&2
+          FAILED=1
         fi
-        ;;
-      '```'*)
-        if [[ $in_block -eq 1 ]]; then
-          in_block=0
-          # validate the block by attempting render
-          local in_file="$tmpdir/block_${block_no}.mmd"
-          local out_file="$tmpdir/block_${block_no}.svg"
-          if ! $MMDC_CMD -i "$in_file" -o "$out_file" --quiet >/dev/null 2>&1; then
-            echo "Mermaid error: $file: block $block_no (see $in_file)" >&2
-            FAILED=1
-          fi
-          continue
-        fi
-        ;;
+        continue
+      fi
+      ;;
     esac
     if [[ $in_block -eq 1 ]]; then
       printf '%s\n' "$line" >>"$tmpdir/block_${block_no}.mmd"

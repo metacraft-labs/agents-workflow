@@ -13,12 +13,22 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "specs/Research/Sandboxing Technologies.md",
+                "file": "specs/Public/Sanboxing/Local Sandboxing on Linux.md",
                 "mode": "source",
-                "source": false
+                "source": false,
+                "backlinks": true,
+                "backlinkOpts": {
+                  "collapseAll": false,
+                  "extraContext": false,
+                  "sortOrder": "alphabetical",
+                  "showSearch": false,
+                  "searchQuery": "",
+                  "backlinkCollapsed": false,
+                  "unlinkedCollapsed": true
+                }
               },
               "icon": "lucide-file",
-              "title": "Sandboxing Technologies"
+              "title": "Local Sandboxing on Linux"
             }
           },
           {
@@ -184,6 +194,7 @@
   },
   "left-ribbon": {
     "hiddenItems": {
+      "bases:Create new base": false,
       "switcher:Open quick switcher": false,
       "graph:Open graph view": false,
       "canvas:Create new canvas": false,
@@ -194,13 +205,20 @@
   },
   "active": "01bf72509d2b5652",
   "lastOpenFiles": [
+    "lychee.toml",
+    "specs/Research/Restricting Guest Internet Access to a Whitelist of Websites.md",
+    "specs/Research/Supervisor Process for Dynamic File Access Control on Linux.md",
+    "specs/Research/fds.md",
+    "specs/Public/Sanboxing/Agents Workflow Sandboxing Strategies.md",
+    "specs/Public/Sanboxing/Local Sandboxing on Linux.md",
+    "specs/Research/Sandboxing Technologies.md",
+    "specs/Public/Sanboxing",
     "docs/state-persistence.md",
     "docs/marketing-one-pager.md",
     "docs/guide.md",
     "docs/AI Development Guide.md",
     "specs/Public/State Persistence.md",
     "docs/Product One Pager.md",
-    "specs/Research/Sandboxing Technologies.md",
     "specs/Public/CLI.md",
     "specs/Research/MicroVM Research.md",
     "specs/Public/Nix Devcontainer/Devcontainer Design.md",
@@ -215,12 +233,6 @@
     "specs/Public/Nix Devcontainer/Devcontainer Cache Guidelines.md",
     "specs/Public/FS Snapshots/FS Snapshots Overview.md",
     "specs/Public/Agent Browsers/Agent Browser Profiles.md",
-    "specs/Public/Browser Automation/Codex.md",
-    "specs/Public/Extras Framework.md",
-    "specs/Public/Lima VM Images.md",
-    "specs/Public/Agent Time Travel.md",
-    "specs/Public/WebUI PRD.md",
-    "specs/Public/TUI PRD.md",
     "specs/Public",
     "agent-task-0.1.0.gem",
     "test/logs/temp_output_20250828_001209.log",

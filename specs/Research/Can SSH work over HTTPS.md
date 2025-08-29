@@ -13,7 +13,7 @@ ssh -o 'ProxyCommand=nc -X connect -x proxy.company.com:8080 %h %p' user@ssh.exa
 (Requires the OpenBSD flavor of `nc` that supports `-X connect -x`.)
 
 - **Proxy requires auth or TLS (“HTTPS proxy” on :443):**  
-    Use a helper that understands CONNECT + (optional) TLS and auth, e.g. **proxytunnel** or **corkscrew**.
+   Use a helper that understands CONNECT + (optional) TLS and auth, e.g. **proxytunnel** or **corkscrew**.
 
 ```bash
 # HTTPS proxy (with or without Basic auth)
@@ -29,9 +29,7 @@ ssh -o 'ProxyCommand=corkscrew proxy.company.com 8080 %h %p ~/.proxy-auth' user@
 > Notes
 >
 > - Many corporate proxies only allow CONNECT to ports like **443**. If so, have your SSH server listen on 443 (or use a port-forwarder on the server) and CONNECT to that.
->
 > - Some proxies do TLS interception and require a real TLS handshake (ALPN/SNI). In that case, raw SSH on :443 won’t pass—use the TLS-wrapped options below.
->
 
 # 2) Wrap SSH in TLS so it “looks like HTTPS”
 

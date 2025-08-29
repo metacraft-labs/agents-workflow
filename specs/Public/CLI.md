@@ -25,10 +25,11 @@ The CLI honors the layered configuration model in [Configuration](Configuration.
 - **Sandbox profiles (orthogonal):** When launching locally, sandbox profiles define the isolation level (container, VM, bwrap/firejail, or unsandboxed per policy). See [Sandbox Profiles](Sandbox%20Profiles.md) and configuration mapping below.
 
 ### Global Behavior and Flags
+
 Naming consistency: the config key controlling UI selection is `ui`, not `ui.default`.
 
 - `aw` (no args): Launches the default UI (TUI by default). Config key `ui` controls TUI vs WebUI; built‑in default is `tui`.
-- Common global flags (apply to all subcommands unless noted):  
+- Common global flags (apply to all subcommands unless noted):
   - `--remote-server <NAME|URL>`: If provided, use the REST API at this server (by name lookup in config or raw URL). Otherwise use local SQLite state.
   - `--repo <PATH|URL>`: Target repository (filesystem path in local runs; git URL may be used by some servers). If omitted, AW auto-detects a VCS root by walking parent directories and checking all supported VCS.
   - `--workspace <NAME>`: Named workspace (only valid on servers that support workspaces). Errors if unsupported by the selected server.
@@ -100,7 +101,6 @@ Draft flow (TUI/Web parity):
 - `aw session pause <SESSION_ID>`
 - `aw session resume <SESSION_ID>`
 - `aw session cancel <SESSION_ID>`
-
 
 Behavior:
 
@@ -206,7 +206,6 @@ Output and exit codes:
 
 - Human‑readable table by default; `--json` emits `{ agent: { present, version, authenticated, details } }` per tool. Non‑zero exit if any requested agent tool is present but unauthenticated, unless `--quiet` and policy permit soft warnings.
 
-
 #### 6) Runtimes, Agents, Hosts (capabilities)
 
 - `aw agents list`
@@ -240,11 +239,11 @@ Mirrors `docs/configuration.md` including provenance, precedence, and Windows be
   - `aw relay send --session <id> --host <name> --control <json>`
   - `aw relay socks5 --session <id> --bind 127.0.0.1:1080` — Start a local SOCKS5 relay for this session (client‑hosted rendezvous).
 
-
 - `aw doctor` — Environment diagnostics (snapshot providers, multiplexer availability, docker/devcontainer, git).
 - `aw completion [bash|zsh|fish|pwsh]` — Shell completions.
 
 #### 10) Agent Utilities (`aw agent ...`)
+
 - Subcommands used only in agent dev environments live under `aw agent ...`. This keeps end‑user command space clean while still scriptable for agents.
 - `aw agent get-task` — Helper used by terminal‑style agents to fetch the next task payload (prompt, repo, settings) from the local state or configured REST service and print it as JSON. Honors the same `--remote-server` and `--repo` resolution as `aw task`.
 - `aw agent start-work` — Helper to mark the current task as started (transition status, open logs) and emit initial SessionMoment metadata so timeline recording aligns with agent startup. Prints the session id.

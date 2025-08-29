@@ -12,33 +12,33 @@ Document when and how Agents‑Workflow automatically injects instructions into 
 
 ### Injection Sites
 
-1) Session Start (Boot Strap)
+1. Session Start (Boot Strap)
    - Goal: establish conventions (working directory, shell, editor policy), and safety guarantees (sandbox, no destructive host ops outside workspace).
    - Content (illustrative):
      - "Always operate within the workspace root."
      - "Use provided commands/scripts; do not re‑invent environment setup."
      - Credential usage rules (see per‑agent docs in `docs/agents/`).
 
-2) Before Command Execution (Time‑Travel Hooks)
+2. Before Command Execution (Time‑Travel Hooks)
    - Goal: bind edits and commands to SessionMoments/FsSnapshots for reproducibility.
    - Content: "Between editing and running tools, a filesystem snapshot will be taken automatically; do not run concurrent background processes that modify the tree during snapshot."
 
-3) Multi‑OS Testing (run‑everywhere)
+3. Multi‑OS Testing (run‑everywhere)
    - Trigger: When multi‑OS is enabled, after `fs_snapshot_and_sync` the agent is instructed to use `run-everywhere`.
    - Content (illustrative excerpt):
      - "To validate across OSes, run `.agents/run_everywhere <action> [--host <name>|--tag <k=v>|--all]`."
      - "Examples: `.agents/run_everywhere test --all`; `.agents/run_everywhere build --tag os=windows`."
      - "Do not invoke platform‑specific commands directly on followers; `run_everywhere` returns the per‑host outputs to you."
 
-4) Delivery Policy (PR/branch/patch)
+4. Delivery Policy (PR/branch/patch)
    - Goal: align with chosen delivery mode.
    - Content: strict steps for commit hygiene, test gating, and PR formatting.
 
-5) Credential Usage
+5. Credential Usage
    - Goal: ensure tools pick up auth from env/hosts files mounted by the runner; avoid asking the user to paste secrets.
    - Content: name the env vars and file paths (read‑only) approved for use.
 
-6) Safety and Idempotence
+6. Safety and Idempotence
    - Goal: avoid destructive operations outside the workspace; favor idempotent scripts.
    - Content: "Do not edit files outside the workspace root. Do not alter global system settings."
 
@@ -71,5 +71,3 @@ Between editing and running tools, the system captures an FsSnapshot tied to the
 
 - Per‑agent tailored injections (see `docs/agents/`), including auth scopes and rate‑limit guidance.
 - Localization of injections for international teams.
-
-
